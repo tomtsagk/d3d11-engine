@@ -1,0 +1,27 @@
+name: Create Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  # Windows
+  build_windows:
+    runs-on: windows-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v1
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Build app for release
+      run: msbuild App2-uwp-dx11.vcxproj -t:rebuild -verbosity:diag -property:Configuration=Release
+    - name: prepare_libraries
+      if: ${{ false }}
+      shell: bash
+      run: |
+        mkdir libraries
+    - name: get_avdl
+      if: ${{ false }}
+      run: |
+        C:\msys64\usr\bin\wget.exe -q $Env:AVDL_BUILD_URL_WINDOWS -O avdl_build_windows.zip
