@@ -15,7 +15,7 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
-      run: msbuild App2-uwp-dx11.vcxproj -t:rebuild -verbosity:diag -property:Configuration=Release
+      run: msbuild App2-uwp-dx11.vcxproj -property:Configuration=Release;AppxBundle=Always;AppxBundlePlatforms="x86|x64|ARM" /p:BuildAppxUploadPackageForUap=true
     - name: display
       shell: bash
       run: |
