@@ -1,1 +1,0 @@
-C:\Users\tomts\source\repos\App2-uwp-dx11\App2-uwp-dx11\App2-uwp-dx11.vcxproj;x86
