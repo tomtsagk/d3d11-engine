@@ -1,0 +1,9 @@
+﻿  compilation object save succeeded; see C:\Users\tomts\source\repos\App2-uwp-dx11\x64\Debug\App2-uwp-dx11\SamplePixelShader.cso
+  compilation object save succeeded; see C:\Users\tomts\source\repos\App2-uwp-dx11\x64\Debug\App2-uwp-dx11\SampleVertexShader.cso
+  pch.cpp
+  App.cpp
+  DeviceResources.cpp
+  App2_uwp_dx11Main.cpp
+  SampleFpsTextRenderer.cpp
+  Sample3DSceneRenderer.cpp
+  App2-uwp-dx11.vcxproj -> C:\Users\tomts\source\repos\App2-uwp-dx11\x64\Debug\App2-uwp-dx11\App2-uwp-dx11.exe
