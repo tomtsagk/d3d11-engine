@@ -15,7 +15,7 @@ jobs:
     # Decode the base 64 encoded pfx and save the Signing_Certificate
     - name: Decode the pfx
       run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.BASE64_ENCODED_PFX }}")
         $certificatePath = Join-Path -Path ./ -ChildPath ${{ env.project_name }}_TemporaryKey.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     - name: checkout
@@ -48,7 +48,6 @@ jobs:
         name: unpackaged_app
         path: '${{ env.project_name }}-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: display
-      if: ${{ false }}
       shell: bash
       run: |
         ls -R
