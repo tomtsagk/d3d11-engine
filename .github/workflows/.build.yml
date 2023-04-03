@@ -38,8 +38,10 @@ jobs:
       env:
         Configuration: Release
     - name: Create ZIP of unpackaged app
-      run: Compress-Archive bin/x64/Release/net5.0-windows10.0.19041.0/publish/* 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
+      if: ${{ false }}
+      run: Compress-Archive /x64/Release/net5.0-windows10.0.19041.0/publish/* 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: Upload unpackaged app
+      if: ${{ false }}
       uses: actions/upload-artifact@v2
       with:
         name: 'Unpackaged app'
