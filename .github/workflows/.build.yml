@@ -12,14 +12,14 @@ jobs:
   build_windows:
     runs-on: windows-latest
     steps:
+    - name: checkout
+      uses: actions/checkout@v1
     # Decode the base 64 encoded pfx and save the Signing_Certificate
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.BASE64_ENCODED_PFX }}")
         $certificatePath = Join-Path -Path ./ -ChildPath ${{ env.project_name }}_TemporaryKey.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-    - name: checkout
-      uses: actions/checkout@v1
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
