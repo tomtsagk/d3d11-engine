@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+env:
+  project_name: App2-uwp-dx11
+
 jobs:
   build_windows:
     runs-on: windows-latest
@@ -13,14 +16,14 @@ jobs:
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path ./ -ChildPath App2_uwp_dx11_TemporaryKey.pfx
+        $certificatePath = Join-Path -Path ./ -ChildPath ${{ env.project_name }}_TemporaryKey.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     - name: checkout
       uses: actions/checkout@v1
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
-      run: msbuild App2-uwp-dx11.vcxproj /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=App2_uwp_dx11_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
+      run: msbuild "$env:project_name.vcxproj" /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=${{ env.project_name }}_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
       env:
         Appx_Bundle: Never
         Appx_Bundle_Platforms: x64
@@ -31,25 +34,21 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: app.msix
-        path: Packages/**/App2-uwp-dx11*.msix
+        path: Packages/**/$env:project_name*.msix
     # Create the unpackaged app
     - name: Build unpackaged app
-      run: msbuild App2-uwp-dx11.vcxproj /t:Publish /p:WindowsPackageType=None /p:Configuration=Release /p:Platform=x64
+      run: msbuild "$env:project_name.vcxproj" /t:Publish /p:WindowsPackageType=None /p:Configuration=Release /p:Platform=x64
       env:
         Configuration: Release
     - name: Create ZIP of unpackaged app
-      run: Compress-Archive x64/Release/App2-uwp-dx11/* 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
+      run: Compress-Archive x64/Release/"$env:project_name"/* '$env:project_name-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: Upload unpackaged app
       uses: actions/upload-artifact@v2
       with:
         name: unpackaged_app.zip
-        path: 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
+        path: '${{ env.project_name }}-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: display
       if: ${{ false }}
       shell: bash
       run: |
         ls -R
-
-#run: msbuild App2-uwp-dx11.vcxproj -property:Configuration=Release;AppxBundle=Always;AppxBundlePlatforms="x86|x64|ARM" /p:BuildAppxUploadPackageForUap=true
-#run: msbuild App2-uwp-dx11.vcxproj -property:Configuration=Release
-#$certificatePath = Join-Path -Path App2_uwp_dx11 -ChildPath App2_uwp_dx11_TemporaryKey.pfx
