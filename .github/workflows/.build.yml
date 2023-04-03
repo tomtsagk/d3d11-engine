@@ -9,10 +9,6 @@ jobs:
   # Windows
   build_windows:
 
-    strategy:
-      matrix:
-        configuration: [Release]
-
     env:
       Solution_Name: App2_uwp_dx11
       Project_Directory: App2_uwp_dx11
@@ -37,7 +33,7 @@ jobs:
         Appx_Bundle_Platforms: x64
         Appx_Package_Build_Mode: SideloadOnly
         Appx_Package_Dir: Packages\
-        Configuration: ${{ matrix.configuration }}
+        Configuration: Release
     - name: display
       shell: bash
       run: |
