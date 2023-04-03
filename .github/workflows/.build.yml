@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  project_name: App2-uwp-dx11
+  project_name: App2_uwp_dx11
 
 jobs:
   build_windows:
@@ -33,7 +33,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: app.msix
+        name: app
         path: Packages/**/$env:project_name*.msix
     # Create the unpackaged app
     - name: Build unpackaged app
@@ -45,7 +45,7 @@ jobs:
     - name: Upload unpackaged app
       uses: actions/upload-artifact@v2
       with:
-        name: unpackaged_app.zip
+        name: unpackaged_app
         path: '${{ env.project_name }}-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: display
       if: ${{ false }}
