@@ -7,23 +7,20 @@ on:
 
 jobs:
   build_windows:
-    env:
-      Solution_Name: App2_uwp_dx11
-      Project_Directory: App2_uwp_dx11
+    runs-on: windows-latest
+    steps:
     # Decode the base 64 encoded pfx and save the Signing_Certificate
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath App2_uwp_dx11_TemporaryKey.pfx
+        $certificatePath = Join-Path -Path App2_uwp_dx11 -ChildPath App2_uwp_dx11_TemporaryKey.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-    runs-on: windows-latest
-    steps:
     - name: checkout
       uses: actions/checkout@v1
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
-      run: msbuild $env:Solution_Name /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=App2_uwp_dx11_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
+      run: msbuild App2_uwp_dx11 /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=App2_uwp_dx11_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
       env:
         Appx_Bundle: Never
         Appx_Bundle_Platforms: x64
