@@ -38,7 +38,7 @@ jobs:
       env:
         Configuration: Release
     - name: Create ZIP of unpackaged app
-      run: Compress-Archive /x64/Release/App2-uwp-dx11/* 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
+      run: Compress-Archive x64/Release/App2-uwp-dx11/* 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: Upload unpackaged app
       uses: actions/upload-artifact@v2
       with:
