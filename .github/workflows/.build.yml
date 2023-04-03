@@ -6,7 +6,6 @@ on:
       - master
 
 jobs:
-  # Windows
   build_windows:
     env:
       Solution_Name: App2_uwp_dx11
