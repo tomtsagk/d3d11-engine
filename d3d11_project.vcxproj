@@ -37,7 +37,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{b4c65a0b-138f-4957-a986-ec49d51b1098}</ProjectGuid>
     <Keyword>DirectXApp</Keyword>
-    <RootNamespace>App2_uwp_dx11</RootNamespace>
+    <RootNamespace>d3d11_project</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>

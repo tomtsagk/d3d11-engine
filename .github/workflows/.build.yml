@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  project_name: App2_uwp_dx11
+  project_name: d3d11_project
 
 jobs:
   build_windows:

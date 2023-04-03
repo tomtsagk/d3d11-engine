@@ -14,7 +14,7 @@
   <mp:PhoneIdentity PhoneProductId="f1391462-33ec-45f3-ac63-b979dba44431" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>App2-uwp-dx11</DisplayName>
+    <DisplayName>d3d11_project</DisplayName>
     <PublisherDisplayName>tomts</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
