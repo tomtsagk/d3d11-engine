@@ -27,6 +27,23 @@ jobs:
         Appx_Package_Build_Mode: SideloadOnly
         Appx_Package_Dir: Packages\
         Configuration: Release
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: MSIX Package
+        path: Packages/**/App2-uwp-dx11*.msix
+    # Create the unpackaged app
+    - name: Build unpackaged app
+      run: msbuild App2-uwp-dx11.vcxproj /t:Publish /p:WindowsPackageType=None /p:Configuration=Release /p:Platform=x64
+      env:
+        Configuration: Release
+    - name: Create ZIP of unpackaged app
+      run: Compress-Archive bin/x64/Release/net5.0-windows10.0.19041.0/publish/* 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
+    - name: Upload unpackaged app
+      uses: actions/upload-artifact@v2
+      with:
+        name: 'Unpackaged app'
+        path: 'App2-uwp-dx11-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: display
       shell: bash
       run: |
