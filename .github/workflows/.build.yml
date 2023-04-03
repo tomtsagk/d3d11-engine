@@ -41,7 +41,7 @@ jobs:
       env:
         Configuration: Release
     - name: Create ZIP of unpackaged app
-      run: Compress-Archive x64/Release/"$env:project_name"/* '$env:project_name-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
+      run: Compress-Archive x64/Release/${{ env.project_name }}/* '${{ env.project_name }}-unpackaged-0.${{ github.run_number }}.${{ github.run_attempt }}.0.zip'
     - name: Upload unpackaged app
       uses: actions/upload-artifact@v2
       with:
