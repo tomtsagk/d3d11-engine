@@ -13,7 +13,7 @@ jobs:
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path App2_uwp_dx11 -ChildPath App2_uwp_dx11_TemporaryKey.pfx
+        $certificatePath = Join-Path -ChildPath App2_uwp_dx11_TemporaryKey.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     - name: checkout
       uses: actions/checkout@v1
@@ -34,3 +34,4 @@ jobs:
 
 #run: msbuild App2-uwp-dx11.vcxproj -property:Configuration=Release;AppxBundle=Always;AppxBundlePlatforms="x86|x64|ARM" /p:BuildAppxUploadPackageForUap=true
 #run: msbuild App2-uwp-dx11.vcxproj -property:Configuration=Release
+#$certificatePath = Join-Path -Path App2_uwp_dx11 -ChildPath App2_uwp_dx11_TemporaryKey.pfx
