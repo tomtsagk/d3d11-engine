@@ -13,7 +13,7 @@ jobs:
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -ChildPath App2_uwp_dx11_TemporaryKey.pfx
+        $certificatePath = Join-Path -Path ./ -ChildPath App2_uwp_dx11_TemporaryKey.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     - name: checkout
       uses: actions/checkout@v1
