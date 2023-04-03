@@ -8,18 +8,15 @@ on:
 jobs:
   # Windows
   build_windows:
-
     env:
       Solution_Name: App2_uwp_dx11
       Project_Directory: App2_uwp_dx11
-
     # Decode the base 64 encoded pfx and save the Signing_Certificate
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
         $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath App2_uwp_dx11_TemporaryKey.pfx
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-
     runs-on: windows-latest
     steps:
     - name: checkout
