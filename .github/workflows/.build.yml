@@ -33,7 +33,7 @@ jobs:
     - name: Sign
       run: |
         $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
-        & $signtool sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} Packages/**/${{ env.project_name }}*.msix
+        & $signtool sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} Packages/d3d11_project_1.0.0.0_Win32_Test/d3d11_project_1.0.0.0_Win32.msix
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
