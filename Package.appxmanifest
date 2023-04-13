@@ -6,10 +6,9 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
 
-  <Identity
-    Name="f1391462-33ec-45f3-ac63-b979dba44431"
-    Publisher="CN=tomts"
-    Version="1.0.0.0" />
+  <Identity Name="8047DarkDimension.Rue-CardGame"
+    Version="1.0.0.0"
+    Publisher="CN=F02BE368-CAA8-48A5-ACFD-482F4512EC85" />
 
   <mp:PhoneIdentity PhoneProductId="f1391462-33ec-45f3-ac63-b979dba44431" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
