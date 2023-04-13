@@ -43,7 +43,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: app-all
-        path: Packages/**/
+        path: ./
     # Create the unpackaged app
     - name: Build unpackaged app
       run: msbuild "$env:project_name.vcxproj" /t:Publish /p:WindowsPackageType=None /p:Configuration=Release /p:Platform=x64
