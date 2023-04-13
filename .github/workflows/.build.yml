@@ -35,6 +35,11 @@ jobs:
       with:
         name: app
         path: Packages/**/${{ env.project_name }}*.msix
+    - name: Upload build artifacts-2
+      uses: actions/upload-artifact@v2
+      with:
+        name: app-all
+        path: Packages/**/
     # Create the unpackaged app
     - name: Build unpackaged app
       run: msbuild "$env:project_name.vcxproj" /t:Publish /p:WindowsPackageType=None /p:Configuration=Release /p:Platform=x64
