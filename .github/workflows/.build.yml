@@ -32,8 +32,8 @@ jobs:
         Configuration: Release
     - name: Sign
       run: |
-        ls "C:\Program Files (x86)\Microsoft Kits\10\bin"
-        $signtool = "C:\Program Files (x86)\Microsoft Kits\10\bin\10.0.22000.0\x64\signtool.exe"
+        ls "C:\Program Files (x86)\Microsoft Kits\10"
+        $signtool = "C:\Program Files (x86)\Microsoft Kits\10\App Certification Kit\signtool.exe"
         & $signtool sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} AppPackages/d3d11_project/d3d11_project_1.0.0.0_Test/d3d11_project_1.0.0.0_x86_x64.msixbundle
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
