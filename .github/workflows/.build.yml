@@ -23,17 +23,17 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
-      run: msbuild "$env:project_name.vcxproj" /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=${{ env.project_name }}_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
+      run: msbuild "$env:project_name.vcxproj" /p:AppxBundlePlatforms="x86|x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
       env:
         Appx_Bundle: Never
         Appx_Bundle_Platforms: x64
         Appx_Package_Build_Mode: SideloadOnly
         Appx_Package_Dir: Packages\
         Configuration: Release
-    - name: Sign
-      run: |
-        $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
-        & $signtool sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} Packages/d3d11_project_1.0.0.0_Win32_Test/d3d11_project_1.0.0.0_Win32.msix
+#    - name: Sign
+#      run: |
+#        $signtool = "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
+#        & $signtool sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} Packages/d3d11_project_1.0.0.0_Win32_Test/d3d11_project_1.0.0.0_Win32.msix
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -60,3 +60,5 @@ jobs:
       shell: bash
       run: |
         ls -R
+
+#run: msbuild "$env:project_name.vcxproj" /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=${{ env.project_name }}_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
