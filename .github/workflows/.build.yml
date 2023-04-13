@@ -30,6 +30,8 @@ jobs:
         Appx_Package_Build_Mode: SideloadOnly
         Appx_Package_Dir: Packages\
         Configuration: Release
+    - name: Sign
+      run: "C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe" sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} Packages/**/${{ env.project_name }}*.msix
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
