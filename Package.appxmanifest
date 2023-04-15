@@ -10,11 +10,9 @@
     Version="1.0.0.0"
     Publisher="CN=F02BE368-CAA8-48A5-ACFD-482F4512EC85" />
 
-  <mp:PhoneIdentity PhoneProductId="f1391462-33ec-45f3-ac63-b979dba44431" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
-
   <Properties>
-    <DisplayName>d3d11_project</DisplayName>
-    <PublisherDisplayName>tomts</PublisherDisplayName>
+    <DisplayName>App2_uwp_dx11</DisplayName>
+    <PublisherDisplayName>publisher_name</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -42,7 +40,4 @@
     </Application>
   </Applications>
 
-  <Capabilities>
-    <Capability Name="internetClient" />
-  </Capabilities>
 </Package>

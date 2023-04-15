@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  project_name: d3d11_project
+  project_name: avdl_project
 
 jobs:
   build_windows:
@@ -34,12 +34,12 @@ jobs:
       run: |
         ls "C:\Program Files (x86)\Windows Kits\10"
         $signtool = "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe"
-        & $signtool sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} AppPackages/d3d11_project/d3d11_project_1.0.0.0_Test/d3d11_project_1.0.0.0_x86_x64.msixbundle
+        & $signtool sign /fd sha256 /a /f ${{ env.project_name }}_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} AppPackages/${{ env.project_name }}/${{ env.project_name }}_1.0.0.0_Test/${{ env.project_name }}_1.0.0.0_x86_x64.msixbundle
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: app
-        path: AppPackages/d3d11_project/d3d11_project_1.0.0.0_Test
+        path: AppPackages/${{ env.project_name }}/${{ env.project_name }}_1.0.0.0_Test
     # Create the unpackaged app
     - name: Build unpackaged app
       run: msbuild "$env:project_name.vcxproj" /t:Publish /p:WindowsPackageType=None /p:Configuration=Release /p:Platform=x64
@@ -56,5 +56,3 @@ jobs:
       shell: bash
       run: |
         ls -R
-
-#run: msbuild "$env:project_name.vcxproj" /p:AppxBundlePlatforms="$env:Appx_Bundle_Platforms" /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=${{ env.project_name }}_TemporaryKey.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
