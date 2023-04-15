@@ -6,13 +6,13 @@
 #include "Content\SampleFpsTextRenderer.h"
 
 // Renders Direct2D and 3D content on the screen.
-namespace App2_uwp_dx11
+namespace dx11_avdl
 {
-	class App2_uwp_dx11Main : public DX::IDeviceNotify
+	class dx11_avdl_main : public DX::IDeviceNotify
 	{
 	public:
-		App2_uwp_dx11Main(const std::shared_ptr<DX::DeviceResources>& deviceResources);
-		~App2_uwp_dx11Main();
+		dx11_avdl_main(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+		~dx11_avdl_main();
 		void CreateWindowSizeDependentResources();
 		void Update();
 		bool Render();

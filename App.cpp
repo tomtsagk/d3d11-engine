@@ -3,7 +3,7 @@
 
 #include <ppltasks.h>
 
-using namespace App2_uwp_dx11;
+using namespace dx11_avdl;
 
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
@@ -85,7 +85,7 @@ void App::Load(Platform::String^ entryPoint)
 {
 	if (m_main == nullptr)
 	{
-		m_main = std::unique_ptr<App2_uwp_dx11Main>(new App2_uwp_dx11Main(m_deviceResources));
+		m_main = std::unique_ptr<dx11_avdl_main>(new dx11_avdl_main(m_deviceResources));
 	}
 }
 
