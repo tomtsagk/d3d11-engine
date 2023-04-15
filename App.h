@@ -2,9 +2,9 @@
 
 #include "pch.h"
 #include "Common\DeviceResources.h"
-#include "dx11_avdl_main.h"
+#include "App2_uwp_dx11Main.h"
 
-namespace dx11_avdl
+namespace App2_uwp_dx11
 {
 	// Main entry point for our app. Connects the app with the Windows shell and handles application lifecycle events.
 	ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
@@ -37,7 +37,7 @@ namespace dx11_avdl
 
 	private:
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
-		std::unique_ptr<dx11_avdl_main> m_main;
+		std::unique_ptr<App2_uwp_dx11Main> m_main;
 		bool m_windowClosed;
 		bool m_windowVisible;
 	};

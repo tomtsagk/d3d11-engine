@@ -1,14 +1,14 @@
 ﻿#include "pch.h"
-#include "dx11_avdl_main.h"
+#include "App2_uwp_dx11Main.h"
 #include "Common\DirectXHelper.h"
 
-using namespace dx11_avdl;
+using namespace App2_uwp_dx11;
 using namespace Windows::Foundation;
 using namespace Windows::System::Threading;
 using namespace Concurrency;
 
 // Loads and initializes application assets when the application is loaded.
-dx11_avdl_main::dx11_avdl_main(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
+App2_uwp_dx11Main::App2_uwp_dx11Main(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_deviceResources(deviceResources)
 {
 	// Register to be notified if the Device is lost or recreated
@@ -27,21 +27,21 @@ dx11_avdl_main::dx11_avdl_main(const std::shared_ptr<DX::DeviceResources>& devic
 	*/
 }
 
-dx11_avdl_main::~dx11_avdl_main()
+App2_uwp_dx11Main::~App2_uwp_dx11Main()
 {
 	// Deregister device notification
 	m_deviceResources->RegisterDeviceNotify(nullptr);
 }
 
 // Updates application state when the window size changes (e.g. device orientation change)
-void dx11_avdl_main::CreateWindowSizeDependentResources() 
+void App2_uwp_dx11Main::CreateWindowSizeDependentResources() 
 {
 	// TODO: Replace this with the size-dependent initialization of your app's content.
 	m_sceneRenderer->CreateWindowSizeDependentResources();
 }
 
 // Updates the application state once per frame.
-void dx11_avdl_main::Update() 
+void App2_uwp_dx11Main::Update() 
 {
 	// Update scene objects.
 	m_timer.Tick([&]()
@@ -54,7 +54,7 @@ void dx11_avdl_main::Update()
 
 // Renders the current frame according to the current application state.
 // Returns true if the frame was rendered and is ready to be displayed.
-bool dx11_avdl_main::Render() 
+bool App2_uwp_dx11Main::Render() 
 {
 	// Don't try to render anything before the first Update.
 	if (m_timer.GetFrameCount() == 0)
@@ -85,14 +85,14 @@ bool dx11_avdl_main::Render()
 }
 
 // Notifies renderers that device resources need to be released.
-void dx11_avdl_main::OnDeviceLost()
+void App2_uwp_dx11Main::OnDeviceLost()
 {
 	m_sceneRenderer->ReleaseDeviceDependentResources();
 	m_fpsTextRenderer->ReleaseDeviceDependentResources();
 }
 
 // Notifies renderers that device resources may now be recreated.
-void dx11_avdl_main::OnDeviceRestored()
+void App2_uwp_dx11Main::OnDeviceRestored()
 {
 	m_sceneRenderer->CreateDeviceDependentResources();
 	m_fpsTextRenderer->CreateDeviceDependentResources();
