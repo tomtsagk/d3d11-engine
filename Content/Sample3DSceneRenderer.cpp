@@ -3,6 +3,8 @@
 
 #include "..\Common\DirectXHelper.h"
 
+#include "avdl_log.h"
+
 using namespace App2_uwp_dx11;
 
 using namespace DirectX;
@@ -18,6 +20,7 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 {
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
+	avdl_log("scene renderer constructor");
 }
 
 // Initializes view parameters when the window size changes.
@@ -63,6 +66,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+	avdl_log("scene renderer create window size dependent resources");
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
@@ -77,6 +81,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 
 		Rotate(radians);
 	}
+	avdl_log("scene renderer update");
 }
 
 // Rotate the 3D cube model a set amount of radians.
@@ -178,6 +183,7 @@ void Sample3DSceneRenderer::Render()
 		0,
 		0
 		);
+	avdl_log("scene renderer render");
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources()

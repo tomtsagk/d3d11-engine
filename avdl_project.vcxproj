@@ -262,6 +262,7 @@
 	<ClInclude Include="Content\SampleFpsTextRenderer.h" />
     <ClInclude Include="Content\ShaderStructures.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="cengine/avdl_log.h" />
     <!-- <ClInclude Include="AVDL_INCLUDE.h" /> -->
   </ItemGroup>
   <ItemGroup>
@@ -280,6 +281,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="cengine\avdl_log.c" />
     <!-- <ClCompile Include="Content\AVDL_SRC.c/.cpp" /> -->
   </ItemGroup>
   <ItemGroup>
