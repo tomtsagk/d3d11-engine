@@ -1,7 +1,7 @@
 #include "avdl_log.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include "avdl_settings.h"
+//#include "avdl_settings.h"
 
 #if AVDL_DIRECT3D11
 #include <windows.h>
@@ -21,7 +21,7 @@ void avdl_log(const char *msg, ...) {
 	#if AVDL_DIRECT3D11
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
-	MessageBox(0, buffer, "Avdl Log:", 0);
+	//MessageBox(0, buffer, "Avdl Log:", 0);
 	/*
 	vprintf(msg, args);
 	printf("\n");
