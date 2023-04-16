@@ -13,7 +13,15 @@
 
 #define AVDL_LOG_ERRORSTRING "avdl " RED "error" RESET ": "
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void avdl_log(const char *msg, ...);
 void avdl_log_error(const char *msg, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
