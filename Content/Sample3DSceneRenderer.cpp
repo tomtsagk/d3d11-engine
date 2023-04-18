@@ -19,15 +19,15 @@ void avdl_log2(const char *msg, ...) {
 
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
-	MessageDialog^ msg = ref new MessageDialog(buffer);
+	MessageDialog^ dialog = ref new MessageDialog(buffer);
 	UICommand^ continueCommand = ref new UICommand("Ok");
 	UICommand^ upgradeCommand = ref new UICommand("Cancel");
 
-	msg->DefaultCommandIndex = 0;
-	msg->CancelCommandIndex = 1;
-	msg->Commands->Append(continueCommand);
-	msg->Commands->Append(upgradeCommand);
-	msg->ShowAsync();
+	dialog->DefaultCommandIndex = 0;
+	dialog->CancelCommandIndex = 1;
+	dialog->Commands->Append(continueCommand);
+	dialog->Commands->Append(upgradeCommand);
+	dialog->ShowAsync();
 
 	va_end(args);
 }
