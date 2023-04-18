@@ -10,7 +10,7 @@ using namespace App2_uwp_dx11;
 using namespace DirectX;
 using namespace Windows::Foundation;
 
-using Windows.UI.Popups;
+using namespace Windows::UI::Popups;
 
 void avdl_log2(const char *msg, ...) {
 
