@@ -10,7 +10,7 @@
 
 void avdl_assetManager_loadAssets();
 
-#if defined(AVDL_OS_WINDOWS)
+#if defined(AVDL_OS_WINDOWS) || defined(AVDL_DIRECT3D11)
 #include <windows.h>
 extern HANDLE updateDrawMutex;
 #else

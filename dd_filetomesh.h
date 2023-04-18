@@ -33,8 +33,10 @@ struct dd_loaded_mesh {
 	float *t;
 };
 
+#ifdef AVDL_DIRECT3D11
+int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type);
 /* Creates a loaded mesh from a file */
-#if defined(_WIN32) || defined(WIN32)
+#elif defined(_WIN32) || defined(WIN32)
 int dd_filetomesh(struct dd_loaded_mesh *m, const wchar_t *path, int settings, int file_type);
 #else
 int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type);

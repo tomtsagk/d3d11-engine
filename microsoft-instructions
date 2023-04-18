@@ -1,0 +1,2 @@
+signtool="C:\Program Files (x86)\Microsoft Kits\10\bin\10.0.22000.0\x64\signtool.exe"
+signtool sign /a /fd SHA256 AppPackages/proj_name/proj_name_1.0.0.0_Test/proj_name_1.0.0.0_x86_x64.msixbundle

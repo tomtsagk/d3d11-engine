@@ -16,15 +16,15 @@ extern "C" {
 #define AVDL_ASSETMANAGER_MESHTEXTURE 3
 #define AVDL_ASSETMANAGER_TEXTURE 4
 
-#ifdef AVDL_DIRECT3D11
-#define wchar_t char
-#endif
-
 struct dd_meshToLoad {
 	void *object;
 	int meshType;
 	char filename[400];
+	#ifdef AVDL_DIRECT3D11
+	char filenameW[400];
+	#else
 	wchar_t filenameW[400];
+	#endif
 	int type;
 };
 
