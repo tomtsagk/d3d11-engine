@@ -86,7 +86,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	*/
 	#ifdef AVDL_DIRECT3D11
 	return;
-	#endif
+	#else
 
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
@@ -107,6 +107,8 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	#endif
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
+
+	#endif
 
 }
 
