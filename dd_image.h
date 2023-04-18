@@ -32,6 +32,10 @@ struct dd_image {
 
 void dd_image_create(struct dd_image *o);
 
+#ifdef AVDL_DIRECT3D11
+#define wchar_t char
+#endif
+
 #if defined(WIN32) || defined(_WIN32)
 void dd_image_load_bmp(struct dd_image *img, const wchar_t *filename);
 #else
