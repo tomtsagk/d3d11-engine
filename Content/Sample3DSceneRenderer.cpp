@@ -10,6 +10,28 @@ using namespace App2_uwp_dx11;
 using namespace DirectX;
 using namespace Windows::Foundation;
 
+using Windows.UI.Popups;
+
+void avdl_log2(const char *msg, ...) {
+
+	va_list args;
+	va_start(args, msg);
+
+	char buffer[1024];
+	vsnprintf(buffer, 1024, msg, args);
+	MessageDialog^ msg = ref new MessageDialog(buffer);
+	UICommand^ continueCommand = ref new UICommand("Ok");
+	UICommand^ upgradeCommand = ref new UICommand("Cancel");
+
+	msg->DefaultCommandIndex = 0;
+	msg->CancelCommandIndex = 1;
+	msg->Commands->Append(continueCommand);
+	msg->Commands->Append(upgradeCommand);
+	msg->ShowAsync();
+
+	va_end(args);
+}
+
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_loadingComplete(false),
@@ -20,7 +42,7 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 {
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
-	avdl_log("scene renderer constructor");
+	avdl_log2("scene renderer constructor");
 }
 
 // Initializes view parameters when the window size changes.
@@ -66,7 +88,7 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
-	avdl_log("scene renderer create window size dependent resources");
+	avdl_log2("scene renderer create window size dependent resources");
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
@@ -81,7 +103,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 
 		Rotate(radians);
 	}
-	avdl_log("scene renderer update");
+	avdl_log2("scene renderer update");
 }
 
 // Rotate the 3D cube model a set amount of radians.
@@ -183,7 +205,7 @@ void Sample3DSceneRenderer::Render()
 		0,
 		0
 		);
-	avdl_log("scene renderer render");
+	avdl_log2("scene renderer render");
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources()

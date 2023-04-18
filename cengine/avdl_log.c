@@ -19,13 +19,12 @@ void avdl_log(const char *msg, ...) {
 	__android_log_vprint(ANDROID_LOG_INFO, "avdl", msg, args);
 	 */
 	#if AVDL_DIRECT3D11
+	/*
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
-	/*
 	MessageBox(0, buffer, "Avdl Log:", 0);
 	vprintf(msg, args);
 	printf("\n");
-	*/
 	MessageDialog^ msg = ref new MessageDialog(buffer);
 	UICommand^ continueCommand = ref new UICommand("Ok");
 	UICommand^ upgradeCommand = ref new UICommand("Cancel");
@@ -35,6 +34,7 @@ void avdl_log(const char *msg, ...) {
 	msg->Commands->Append(continueCommand);
 	msg->Commands->Append(upgradeCommand);
 	msg->ShowAsync();
+	*/
 	#else
 	vprintf(msg, args);
 	printf("\n");
