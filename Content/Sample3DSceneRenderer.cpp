@@ -19,7 +19,8 @@ void avdl_log2(const char *msg, ...) {
 
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
-	MessageDialog^ dialog = ref new MessageDialog(buffer);
+	Platform::String^ str = ref new Platform::String(buffer, 1);
+	MessageDialog^ dialog = ref new MessageDialog(str);
 	UICommand^ continueCommand = ref new UICommand("Ok");
 	UICommand^ upgradeCommand = ref new UICommand("Cancel");
 
@@ -40,9 +41,21 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	m_tracking(false),
 	m_deviceResources(deviceResources)
 {
+	LARGE_INTEGER frequency;
+	LARGE_INTEGER start;
+	LARGE_INTEGER end;
+	double interval;
+
+	QueryPerformanceFrequency(&frequency);
+	QueryPerformanceCounter(&start);
+
 	CreateDeviceDependentResources();
 	CreateWindowSizeDependentResources();
-	avdl_log2("scene renderer constructor");
+
+	QueryPerformanceCounter(&end);
+	interval = (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
+
+	avdl_log2("scene renderer constructor done in %.3f seconds");
 }
 
 // Initializes view parameters when the window size changes.
