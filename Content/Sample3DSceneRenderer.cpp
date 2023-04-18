@@ -3,8 +3,6 @@
 
 #include "..\Common\DirectXHelper.h"
 
-#include "..\cengine\avdl_log.h"
-
 using namespace App2_uwp_dx11;
 
 using namespace DirectX;
