@@ -223,7 +223,7 @@ void Sample3DSceneRenderer::Render()
 		0,
 		0
 		);
-	avdl_log2("scene renderer render");
+	//avdl_log2("scene renderer render");
 }
 
 void Sample3DSceneRenderer::CreateDeviceDependentResources()
