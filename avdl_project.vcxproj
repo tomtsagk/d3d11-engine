@@ -262,7 +262,46 @@
 	<ClInclude Include="Content\SampleFpsTextRenderer.h" />
     <ClInclude Include="Content\ShaderStructures.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="cengine/avdl_log.h" />
+    <ClInclude Include="cengine/avdl_achievements.h" />
+    <ClInclude Include="cengine/avdl_assetManager.h" />
+    <ClInclude Include="cengine/avdl_cengine.h" />
+    <ClInclude Include="cengine/avdl_collider_aabb.h" />
+    <ClInclude Include="cengine/avdl_collider.h" />
+    <ClInclude Include="cengine/avdl_collider_sphere.h" />
+    <ClInclude Include="cengine/avdl_data.h" />
+    <ClInclude Include="cengine/avdl_engine.h" />
+    <ClInclude Include="cengine/avdl_graphics.h" />
+    <ClInclude Include="cengine/avdl_input.h" />
+    <ClInclude Include="cengine/avdl_localisation.h" />
+    <ClInclude Include="cengine/avdl_multiplayer.h" />
+    <ClInclude Include="cengine/avdl_particle_system.h" />
+    <ClInclude Include="cengine/avdl_physics.h" />
+    <ClInclude Include="cengine/avdl_rigidbody.h" />
+    <ClInclude Include="cengine/avdl_shaders.h" />
+    <ClInclude Include="cengine/avdl_steam.h" />
+    <ClInclude Include="cengine/dd_async_call.h" />
+    <ClInclude Include="cengine/dd_dynamic_array.h" />
+    <ClInclude Include="cengine/dd_filetomesh.h" />
+    <ClInclude Include="cengine/dd_fov.h" />
+    <ClInclude Include="cengine/dd_game.h" />
+    <ClInclude Include="cengine/dd_gamejolt.h" />
+    <ClInclude Include="cengine/dd_image.h" />
+    <ClInclude Include="cengine/dd_json.h" />
+    <ClInclude Include="cengine/dd_log.h" />
+    <ClInclude Include="cengine/dd_math.h" />
+    <ClInclude Include="cengine/dd_matrix.h" />
+    <ClInclude Include="cengine/dd_meshColour.h" />
+    <ClInclude Include="cengine/dd_mesh.h" />
+    <ClInclude Include="cengine/dd_meshTexture.h" />
+    <ClInclude Include="cengine/dd_mouse.h" />
+    <ClInclude Include="cengine/dd_music.h" />
+    <ClInclude Include="cengine/dd_sound.h" />
+    <ClInclude Include="cengine/dd_string3d.h" />
+    <ClInclude Include="cengine/dd_vec2.h" />
+    <ClInclude Include="cengine/dd_vec3.h" />
+    <ClInclude Include="cengine/dd_vec4.h" />
+    <ClInclude Include="cengine/dd_world.h" />
+    <ClInclude Include="cengine/whereami.h" />
     <!-- <ClInclude Include="AVDL_INCLUDE.h" /> -->
   </ItemGroup>
   <ItemGroup>
@@ -281,7 +320,176 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="cengine\avdl_log.c" >
+    <ClCompile Include="cengine/avdl_achievements.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_achievements_steam.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_assetManager.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_collider_aabb.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_collider.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_collider_sphere.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_data.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_engine.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_engine_cpp.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_graphics_direct3d11.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_graphics_opengl.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_input.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_localisation.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_multiplayer.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_multiplayer_steam.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_particle_system.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_physics.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_rigidbody.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_shaders.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_steam.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/avdl_steam_cpp.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_dynamic_array.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_filetomesh.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_fov.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_game.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_gamejolt.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_image.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_json.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_log.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_log_cpp.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_math.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_matrix.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_mesh.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_meshColour.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_meshTexture.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_mouse.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_music.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_sound.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_string3d.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_vec3.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_vec4.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/dd_world.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/main.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/main_cpp.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="cengine/whereami.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
