@@ -15,10 +15,13 @@ HANDLE updateDrawMutex;
 #include <unistd.h>
 #endif
 
+#ifdef AVDL_DIRECT3D11
+#else
 // Threads
 #include <pthread.h>
 pthread_t updatePthread;
 pthread_mutex_t updateDrawMutex;
+#endif
 
 #endif
 

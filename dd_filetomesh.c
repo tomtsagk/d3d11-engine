@@ -579,6 +579,7 @@ int my_min(num1, num2) {
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	#if defined(AVDL_DIRECT3D11)
+	return 0;
 	#elif defined(_WIN32) || defined(WIN32)
 
 	//Open file and check error
@@ -1207,6 +1208,10 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 /* Parse OBJ */
 int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 
+	#ifdef AVDL_DIRECT3D11
+	return 0;
+	#else
+
 	//(void) attr;
 
 	struct dd_vec3 {
@@ -1328,6 +1333,8 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	//dd_log("stop parsing");
 	return -1;
+
+	#endif
 }
 
 #endif
