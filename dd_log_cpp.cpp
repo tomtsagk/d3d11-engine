@@ -5,6 +5,7 @@
 #ifdef AVDL_DIRECT3D11
 
 #include <windows.h>
+#include "pch.h"
 
 void dd_log(const char *msg, ...) {
 
