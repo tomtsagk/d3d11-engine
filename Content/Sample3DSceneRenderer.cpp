@@ -19,8 +19,13 @@ void avdl_log2(const char *msg, ...) {
 
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
-	Platform::String^ str = ref new Platform::String(buffer, 1);
-	MessageDialog^ dialog = ref new MessageDialog(str);
+
+	std::string s_str = std::string(buffer);
+	std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
+	const wchar_t* w_char = wid_str.c_str();
+	Platform::String^ p_string = ref new Platform::String(w_char);
+
+	MessageDialog^ dialog = ref new MessageDialog(p_string);
 	UICommand^ continueCommand = ref new UICommand("Ok");
 	UICommand^ upgradeCommand = ref new UICommand("Cancel");
 
