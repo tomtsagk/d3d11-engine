@@ -1,6 +1,10 @@
 #ifndef DD_FILETOMESH_H
 #define DD_FILETOMESH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Needs mesh, to store data into */
 #include "dd_mesh.h"
 
@@ -20,10 +24,6 @@
 #define DD_FILETOMESH_SETTINGS_COLOUR 16
 #define DD_FILETOMESH_SETTINGS_TEX_COORD 32
 
-#ifdef AVDL_DIRECT3D11
-#define wchar_t char
-#endif
-
 /* a mesh with all the asked data loaded
  */
 struct dd_loaded_mesh {
@@ -40,6 +40,10 @@ int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int 
 int dd_filetomesh(struct dd_loaded_mesh *m, const wchar_t *path, int settings, int file_type);
 #else
 int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* DD_FILETOMESH_H */

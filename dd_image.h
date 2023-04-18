@@ -1,6 +1,10 @@
 #ifndef DD_IMAGE_H
 #define DD_IMAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "avdl_graphics.h"
 
 enum AVDL_IMAGETYPE {
@@ -46,5 +50,9 @@ void dd_image_unbind(struct dd_image *o);
 void dd_image_set(struct dd_image *o, const char *filename, int type);
 
 void dd_image_clean(struct dd_image *o);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
