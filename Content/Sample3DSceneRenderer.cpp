@@ -121,7 +121,7 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 
 		Rotate(radians);
 	}
-	avdl_log2("scene renderer update");
+	//avdl_log2("scene renderer update");
 }
 
 // Rotate the 3D cube model a set amount of radians.
