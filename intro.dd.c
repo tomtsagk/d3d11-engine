@@ -449,14 +449,14 @@ dd_clearColour(0, 0, 0, 1);
 ;
 }
 void world_intro_draw(struct world_intro *this) {
-glEnable(GL_BLEND);
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//glEnable(GL_BLEND);
+//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 dd_translatef(0, 0, -5);
 dd_scalef(4.200000, 4.200000, 1);
 dd_scalef((this->scale * 1.577000), this->scale, this->scale);
 dd_translatef(0, 0, 0);
 this->logo.parent.parent.draw(&this->logo.parent.parent);
-glDisable(GL_BLEND);
+//glDisable(GL_BLEND);
 }
 void world_intro_key_input(struct world_intro *this, char key) {
 if ((key == 27)) {
