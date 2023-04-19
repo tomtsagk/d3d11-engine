@@ -2102,6 +2102,7 @@ this->button[i].update(&this->button[i], (this->selection == i), (this->selectio
 };
 }
 void world_game_draw(struct world_game *this) {
+/*
 dd_matrix_push();
 dd_rotatef(this->rotY, -1, 0, 0);
 dd_rotatef(this->rotX, 0, 1, 0);
@@ -2265,6 +2266,7 @@ dd_matrix_pop();
 avdl_useProgram(0);
 }
 ;
+*/
 }
 void world_game_key_input(struct world_game *this, char key) {
 if ((key == 27)) {
