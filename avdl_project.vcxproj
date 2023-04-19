@@ -432,6 +432,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="dd_log_cpp.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="dd_math.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
