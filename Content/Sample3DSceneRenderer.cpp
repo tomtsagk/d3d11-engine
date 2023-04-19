@@ -3,12 +3,16 @@
 
 #include "..\Common\DirectXHelper.h"
 
+#include "..\avdl_engine.h"
+
 using namespace App2_uwp_dx11;
 
 using namespace DirectX;
 using namespace Windows::Foundation;
 
 using namespace Windows::UI::Popups;
+
+extern "C" struct avdl_engine engine;
 
 void avdl_log2(const char *msg, ...) {
 
@@ -57,6 +61,8 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 
 	QueryPerformanceCounter(&end);
 	interval = (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
+
+	avdl_engine_init(&engine);
 
 	avdl_log2("scene renderer constructor done in %.3f seconds");
 }
