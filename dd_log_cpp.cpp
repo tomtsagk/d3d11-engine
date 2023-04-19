@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#ifdef AVDL_DIRECT3D11
+#if defined(AVDL_DIRECT3D11)
 
 #include <windows.h>
 #include "pch.h"
