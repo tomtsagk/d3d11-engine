@@ -5,7 +5,7 @@
 #if defined(AVDL_DIRECT3D11)
 
 #include <windows.h>
-#include "pch.h"
+//#include "pch.h"
 
 using namespace Windows::UI::Popups;
 
