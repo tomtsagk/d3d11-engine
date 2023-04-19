@@ -17,7 +17,6 @@ static void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio
 extern int dd_flag_exit;
 
 #ifndef AVDL_DIRECT3D11
-void dd_gameInit() {}
 
 int avdl_engine_init(struct avdl_engine *o) {
 
