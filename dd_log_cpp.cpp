@@ -21,17 +21,16 @@ void dd_log(const char *msg, ...) {
 	//std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
 	//const wchar_t* w_char = wid_str.c_str();
 	//Platform::String^ p_string = ref new Platform::String(w_char);
-	Platform::String^ p_string = ref new Platform::String("Test dialog");
 
-	MessageDialog^ msg = ref new MessageDialog(p_string);
+	MessageDialog^ dialog = ref new MessageDialog("Test dialog");
 	UICommand^ continueCommand = ref new UICommand("Ok");
 	UICommand^ upgradeCommand = ref new UICommand("Cancel");
 
-	msg->DefaultCommandIndex = 0;
-	msg->CancelCommandIndex = 1;
-	msg->Commands->Append(continueCommand);
-	msg->Commands->Append(upgradeCommand);
-	msg->ShowAsync();
+	dialog->DefaultCommandIndex = 0;
+	dialog->CancelCommandIndex = 1;
+	dialog->Commands->Append(continueCommand);
+	dialog->Commands->Append(upgradeCommand);
+	dialog->ShowAsync();
 
 	va_end(args);
 }
