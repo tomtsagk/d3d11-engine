@@ -7,6 +7,8 @@
 #include <windows.h>
 #include "pch.h"
 
+using namespace Windows::UI::Popups;
+
 void dd_log(const char *msg, ...) {
 
 	va_list args;
@@ -15,10 +17,11 @@ void dd_log(const char *msg, ...) {
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
 
-	std::string s_str = std::string(buffer);
-	std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
-	const wchar_t* w_char = wid_str.c_str();
-	Platform::String^ p_string = ref new Platform::String(w_char);
+	//std::string s_str = std::string(buffer);
+	//std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
+	//const wchar_t* w_char = wid_str.c_str();
+	//Platform::String^ p_string = ref new Platform::String(w_char);
+	Platform::String^ p_string = ref new Platform::String("Test dialog");
 
 	MessageDialog^ msg = ref new MessageDialog(p_string);
 	UICommand^ continueCommand = ref new UICommand("Ok");
