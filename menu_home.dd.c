@@ -282,6 +282,7 @@ this->button[i].update(&this->button[i], (this->selection == i), (this->selectio
 };
 }
 void menu_home_draw(struct menu_home *this) {
+/*
 if ((this->animationOpen < 0.010000)) {
 return ;
 }
@@ -338,6 +339,7 @@ this->logoUI.applyTransform(&this->logoUI);
 this->logoUI.applyMatrixTransform(&this->logoUI);
 this->logo.parent.parent.draw(&this->logo.parent.parent);
 dd_matrix_pop();
+*/
 }
 int menu_home_key_input(struct menu_home *this, char key) {
 if (((key == 13) || (key == 32))) {

@@ -877,6 +877,7 @@ avdl_multiplayer_joinLobby(0, 0, OnLobbyJoined);
 ;
 }
 void menu_multiplayer_draw(struct menu_multiplayer *this) {
+/*
 if ((this->animationOpen < 0.010000)) {
 return ;
 }
@@ -961,6 +962,7 @@ dd_translatef(0, -1, 0);
 dd_matrix_pop();
 }
 ;
+*/
 }
 void menu_multiplayer_key_input(struct menu_multiplayer *this, char key) {
 }

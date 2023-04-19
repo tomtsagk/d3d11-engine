@@ -250,6 +250,7 @@ this->button[i].update(&this->button[i], (this->selection == i), (this->selectio
 };
 }
 void options_draw(struct options *this) {
+/*
 if ((this->animationOpen < 0.010000)) {
 return ;
 }
@@ -327,6 +328,7 @@ this->labelNo.draw(&this->labelNo);
 }
 ;
 dd_matrix_pop();
+*/
 }
 int options_key_input(struct options *this, char key) {
 if (((key == 13) || (key == 32))) {
