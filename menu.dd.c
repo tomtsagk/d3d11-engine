@@ -690,6 +690,7 @@ this->menuHome.enable(&this->menuHome);
 void world_menu_onload(struct world_menu *this) {
 this->theme.load(&this->theme, "assets/main_menu_theme.ogg", DD_PLY);
 this->theme.playLoop(&this->theme, -1);
+dd_clearColour(0.5f, 0.5f, 0.5f, 1);
 }
 void world_menu_resize(struct world_menu *this) {
 this->menuMultiplayer.resize(&this->menuMultiplayer);

@@ -279,7 +279,7 @@ int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 
 int avdl_engine_update(struct avdl_engine *o) {
 
-	#if DD_PLATFORM_NATIVE
+	#if DD_PLATFORM_NATIVE || defined(AVDL_DIRECT3D11)
 	if (avdl_engine_isPaused(o)) {
 		return;
 	}

@@ -1,9 +1,10 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Sample3DSceneRenderer.h"
 
 #include "..\Common\DirectXHelper.h"
 
 #include "..\avdl_engine.h"
+#include <dd_game.h>
 
 using namespace App2_uwp_dx11;
 
@@ -63,6 +64,8 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	interval = (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
 
 	avdl_engine_init(&engine);
+	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
+	avdl_engine_setPaused(&engine, false);
 
 	avdl_log2("scene renderer constructor done in %.3f seconds");
 }
@@ -124,7 +127,9 @@ void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 		float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
 
 		Rotate(radians);
+
 	}
+	avdl_engine_update(&engine);
 	//avdl_log2("scene renderer update");
 }
 
@@ -165,6 +170,10 @@ void Sample3DSceneRenderer::Render()
 	}
 
 	auto context = m_deviceResources->GetD3DDeviceContext();
+
+	// Clear Color
+	XMVECTORF32 clearcolor = { dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 0.0f };
+	context->ClearRenderTargetView(m_deviceResources->GetBackBufferRenderTargetView(), clearcolor);
 
 	// Prepare the constant buffer to send it to the graphics device.
 	context->UpdateSubresource1(
@@ -227,6 +236,7 @@ void Sample3DSceneRenderer::Render()
 		0,
 		0
 		);
+	avdl_engine_draw(&engine);
 	//avdl_log2("scene renderer render");
 }
 
