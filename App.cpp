@@ -167,13 +167,13 @@ void D3D11AvdlApplication::OnPointerPressed(CoreWindow^ window, PointerEventArgs
 }
 
 void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
-	if(Args->VirtualKey == VirtualKey::A)
+	if(args->VirtualKey == VirtualKey::A)
 	{
 		MessageDialog Dialog("Key 'A' pressed", "Input detected");
 		Dialog.ShowAsync();
 	}
 	else
-	if(Args->VirtualKey == VirtualKey::GamepadA)
+	if(args->VirtualKey == VirtualKey::GamepadA)
 	{
 		MessageDialog Dialog("Gamepad 'A' pressed", "Input detected");
 		Dialog.ShowAsync();
@@ -186,12 +186,12 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 
 void D3D11AvdlApplication::OnKeyUp(CoreWindow^ window, KeyEventArgs^ args) {
 	// keyboard A
-	if(Args->VirtualKey == VirtualKey::A)
+	if(args->VirtualKey == VirtualKey::A)
 	{
 	}
 	else
 	// gamepad A
-	if(Args->VirtualKey == VirtualKey::GamepadA)
+	if(args->VirtualKey == VirtualKey::GamepadA)
 	{
 	}
 	else {
