@@ -61,7 +61,8 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 {
 	// input
 	window->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &D3D11AvdlApplication::OnPointerPressed);
-	window->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &App::OnKeyDown);
+	window->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &D3D11AvdlApplication::OnKeyDown);
+	window->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &D3D11AvdlApplication::OnKeyUp);
 
 	window->SizeChanged += 
 		ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &D3D11AvdlApplication::OnWindowSizeChanged);
@@ -180,6 +181,20 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	else {
 		MessageDialog Dialog("Unknown key pressed", "Input detected");
 		Dialog.ShowAsync();
+	}
+}
+
+void D3D11AvdlApplication::OnKeyUp(CoreWindow^ window, KeyEventArgs^ args) {
+	// keyboard A
+	if(Args->VirtualKey == VirtualKey::A)
+	{
+	}
+	else
+	// gamepad A
+	if(Args->VirtualKey == VirtualKey::GamepadA)
+	{
+	}
+	else {
 	}
 }
 
