@@ -159,7 +159,7 @@ void D3D11AvdlApplication::OnResuming(Platform::Object^ sender, Platform::Object
 	// Insert your code here.
 }
 
-void D3D11AvdlApplication::OnPointerPressed(Platform::Object^ window, PointerEventArgs^ args) {
+void D3D11AvdlApplication::OnPointerPressed(CoreWindow^ window, PointerEventArgs^ args) {
 	MessageDialog Dialog("Pointer pressed", "Input detected");
 	Dialog.ShowAsync();
 }
