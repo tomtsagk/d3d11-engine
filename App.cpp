@@ -11,6 +11,7 @@ using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
+using namespace Windows::UI::Popups;
 using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
