@@ -6,13 +6,13 @@
 
 namespace App2_uwp_dx11
 {
-	// Main entry point for our app. Connects the app with the Windows shell and handles application lifecycle events.
-	ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
+	// Main d3d11 avdl application
+	ref class D3D11AvdlApplication sealed : public Windows::ApplicationModel::Core::IFrameworkView
 	{
 	public:
-		App();
+		D3D11AvdlApplication();
 
-		// IFrameworkView Methods.
+		// must-override functions
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
 		virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
 		virtual void Load(Platform::String^ entryPoint);
@@ -20,7 +20,8 @@ namespace App2_uwp_dx11
 		virtual void Uninitialize();
 
 	protected:
-		// Application lifecycle event handlers.
+
+		// lifecycle events
 		void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
 		void OnSuspending(Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
 		void OnResuming(Platform::Object^ sender, Platform::Object^ args);
@@ -43,7 +44,8 @@ namespace App2_uwp_dx11
 	};
 }
 
-ref class Direct3DApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
+// Application Source
+ref class D3D11AvdlApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
 {
 public:
 	virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView();
