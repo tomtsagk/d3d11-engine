@@ -40,12 +40,13 @@ jobs:
       with:
         name: app
         path: AppPackages/${{ env.project_name }}/${{ env.project_name }}_1.0.0.0_Test
-    - name: Upload vs development artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: vs_dev
-        path: ./
 
+#    - name: Upload vs development artifacts
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: vs_dev
+#        path: ./
+#
 #    # Create the unpackaged app
 #    - name: Build unpackaged app
 #      run: msbuild "$env:project_name.vcxproj" /t:Publish /p:WindowsPackageType=None /p:Configuration=Release /p:Platform=x64
