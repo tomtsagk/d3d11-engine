@@ -29,7 +29,7 @@ IFrameworkView^ D3D11AvdlApplicationSource::CreateView()
 	return ref new D3D11AvdlApplication();
 }
 
-D3D11AvdlApplication
+D3D11AvdlApplication::D3D11AvdlApplication()
 	m_windowClosed(false),
 	m_windowVisible(true)
 {
