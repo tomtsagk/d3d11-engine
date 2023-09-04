@@ -50,11 +50,17 @@ void D3D11AvdlApplication::Initialize(CoreApplicationView^ applicationView)
 	// At this point we have access to the device. 
 	// We can create the device-dependent resources.
 	m_deviceResources = std::make_shared<DX::DeviceResources>();
+
+	MessageDialog Dialog("Initialised", "New window state");
+	Dialog.ShowAsync();
 }
 
 // Called when the CoreWindow object is created (or re-created).
 void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 {
+	// input
+	window->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &D3D11AvdlApplication::OnPointerPressed);
+
 	window->SizeChanged += 
 		ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &D3D11AvdlApplication::OnWindowSizeChanged);
 
@@ -150,6 +156,11 @@ void D3D11AvdlApplication::OnResuming(Platform::Object^ sender, Platform::Object
 	// does not occur if the app was previously terminated.
 
 	// Insert your code here.
+}
+
+void D3D11AvdlApplication::OnPointerPressed(Platform::Object^ window, PointerEventArgs^ args) {
+	MessageDialog Dialog("Pointer pressed", "Input detected");
+	Dialog.ShowAsync();
 }
 
 // Window event handlers.
