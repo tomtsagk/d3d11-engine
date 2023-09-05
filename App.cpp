@@ -16,9 +16,14 @@ using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 
+using namespace Microsoft::WRL;
+using namespace Platform;
+using namespace DirectX;
+
 // parts of `avdl_graphics`
 ComPtr<ID3D11Device1> dev;
 ComPtr<ID3D11DeviceContext1> devcon;
+ComPtr<IDXGISwapChain1> swapchain;
 
 // The main function is only used to initialize our IFrameworkView class.
 [Platform::MTAThread]
@@ -120,6 +125,21 @@ void D3D11AvdlApplication::Run()
 	// Convert the pointers from the DirectX 11 versions to the DirectX 11.1 versions
 	dev11.As(&dev);
 	devcon11.As(&devcon);
+
+	/*
+	 * Get Factory
+	 */
+	// First, convert our ID3D11Device1 into an IDXGIDevice1
+	ComPtr<IDXGIDevice1> dxgiDevice;
+	dev.As(&dxgiDevice);
+
+	// Second, use the IDXGIDevice1 interface to get access to the adapter
+	ComPtr<IDXGIAdapter> dxgiAdapter;
+	dxgiDevice->GetAdapter(&dxgiAdapter);
+
+	// Third, use the IDXGIAdapter interface to get access to the factory
+	ComPtr<IDXGIFactory2> dxgiFactory;
+	dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), &dxgiFactory);
 
 	MessageDialog Dialog("Direct X initialised", "Graphics completed");
 	Dialog.ShowAsync();
