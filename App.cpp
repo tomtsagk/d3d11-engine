@@ -16,6 +16,10 @@ using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 
+// parts of `avdl_graphics`
+ComPtr<ID3D11Device1> dev;
+ComPtr<ID3D11DeviceContext1> devcon;
+
 // The main function is only used to initialize our IFrameworkView class.
 [Platform::MTAThread]
 int main(Platform::Array<Platform::String^>^)
@@ -93,6 +97,33 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 // This method is called after the window becomes active.
 void D3D11AvdlApplication::Run()
 {
+	// initialise avdl
+
+	// Define temporary pointers to a device and a device context
+	ComPtr<ID3D11Device> dev11;
+	ComPtr<ID3D11DeviceContext> devcon11;
+
+	// Create the device and device context objects
+	D3D11CreateDevice(
+		nullptr, // adapter
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr, // software
+		0, // flags
+		nullptr, // feature levels
+		0, // feature levels count
+		D3D11_SDK_VERSION,
+		&dev11, // device
+		nullptr, // feature level variable
+		&devcon11 // device context
+	);
+
+	// Convert the pointers from the DirectX 11 versions to the DirectX 11.1 versions
+	dev11.As(&dev);
+	devcon11.As(&devcon);
+
+	MessageDialog Dialog("Direct X initialised", "Graphics completed");
+	Dialog.ShowAsync();
+
 	while (!m_windowClosed)
 	{
 		if (m_windowVisible)
@@ -100,6 +131,9 @@ void D3D11AvdlApplication::Run()
 			// window events
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
+			// avdl update
+
+			// avdl render
 			/*
 			// game update
 			m_main->Update();
