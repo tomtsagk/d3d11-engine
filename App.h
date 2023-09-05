@@ -10,8 +10,6 @@ namespace App2_uwp_dx11
 	ref class D3D11AvdlApplication sealed : public Windows::ApplicationModel::Core::IFrameworkView
 	{
 	public:
-		D3D11AvdlApplication();
-
 		// must-override functions
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
 		virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
@@ -28,6 +26,8 @@ namespace App2_uwp_dx11
 
 		// input
 		void OnPointerPressed(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::PointerEventArgs^ args);
+		void OnPointerMoved(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::PointerEventArgs^ args);
+		void OnPointerReleased(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::PointerEventArgs^ args);
 		void OnKeyDown(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::KeyEventArgs^ args);
 		void OnKeyUp(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::KeyEventArgs^ args);
 
@@ -42,8 +42,8 @@ namespace App2_uwp_dx11
 		void OnDisplayContentsInvalidated(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
 
 	private:
-		std::shared_ptr<DX::DeviceResources> m_deviceResources;
-		std::unique_ptr<App2_uwp_dx11Main> m_main;
+		//std::shared_ptr<DX::DeviceResources> m_deviceResources;
+		//std::unique_ptr<App2_uwp_dx11Main> m_main;
 		bool m_windowClosed;
 		bool m_windowVisible;
 	};

@@ -30,30 +30,20 @@ IFrameworkView^ D3D11AvdlApplicationSource::CreateView()
 	return ref new D3D11AvdlApplication();
 }
 
-D3D11AvdlApplication::D3D11AvdlApplication() :
-	m_windowClosed(false),
-	m_windowVisible(true)
-{
-}
-
 // The first method called when the IFrameworkView is being created.
 void D3D11AvdlApplication::Initialize(CoreApplicationView^ applicationView)
 {
 	// Prepare lifecycle handlers
 	applicationView->Activated += ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &D3D11AvdlApplication::OnActivated);
-
-	CoreApplication::Suspending +=
-		ref new EventHandler<SuspendingEventArgs^>(this, &D3D11AvdlApplication::OnSuspending);
-
-	CoreApplication::Resuming +=
-		ref new EventHandler<Platform::Object^>(this, &D3D11AvdlApplication::OnResuming);
+	CoreApplication::Suspending += ref new EventHandler<SuspendingEventArgs^>(this, &D3D11AvdlApplication::OnSuspending);
+	CoreApplication::Resuming   += ref new EventHandler<Platform::Object^>   (this, &D3D11AvdlApplication::OnResuming);
 
 	// At this point we have access to the device. 
 	// We can create the device-dependent resources.
-	m_deviceResources = std::make_shared<DX::DeviceResources>();
+	//m_deviceResources = std::make_shared<DX::DeviceResources>();
 
-	MessageDialog Dialog("Initialised", "New window state");
-	Dialog.ShowAsync();
+	m_windowClosed = false;
+	m_windowVisible = true;
 }
 
 // Called when the CoreWindow object is created (or re-created).
@@ -61,6 +51,8 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 {
 	// input
 	window->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &D3D11AvdlApplication::OnPointerPressed);
+	window->PointerMoved += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &D3D11AvdlApplication::OnPointerMoved);
+	window->PointerReleased += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &D3D11AvdlApplication::OnPointerReleased);
 	window->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &D3D11AvdlApplication::OnKeyDown);
 	window->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &D3D11AvdlApplication::OnKeyUp);
 
@@ -70,8 +62,8 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &D3D11AvdlApplication::OnVisibilityChanged);
 
-	window->Closed += 
-		ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &D3D11AvdlApplication::OnWindowClosed);
+	// window event
+	window->Closed += ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &D3D11AvdlApplication::OnWindowClosed);
 
 	DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
 
@@ -84,16 +76,18 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 	DisplayInformation::DisplayContentsInvalidated +=
 		ref new TypedEventHandler<DisplayInformation^, Object^>(this, &D3D11AvdlApplication::OnDisplayContentsInvalidated);
 
-	m_deviceResources->SetWindow(window);
+	//m_deviceResources->SetWindow(window);
 }
 
 // Initializes scene resources, or loads a previously saved app state.
 void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 {
+	/*
 	if (m_main == nullptr)
 	{
 		m_main = std::unique_ptr<App2_uwp_dx11Main>(new App2_uwp_dx11Main(m_deviceResources));
 	}
+	*/
 }
 
 // This method is called after the window becomes active.
@@ -103,14 +97,19 @@ void D3D11AvdlApplication::Run()
 	{
 		if (m_windowVisible)
 		{
+			// window events
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
+			/*
+			// game update
 			m_main->Update();
 
+			// game render
 			if (m_main->Render())
 			{
 				m_deviceResources->Present();
 			}
+			*/
 		}
 		else
 		{
@@ -144,7 +143,7 @@ void D3D11AvdlApplication::OnSuspending(Platform::Object^ sender, SuspendingEven
 
 	create_task([this, deferral]()
 	{
-        m_deviceResources->Trim();
+		//m_deviceResources->Trim();
 
 		// Insert your code here.
 
@@ -164,6 +163,12 @@ void D3D11AvdlApplication::OnResuming(Platform::Object^ sender, Platform::Object
 void D3D11AvdlApplication::OnPointerPressed(CoreWindow^ window, PointerEventArgs^ args) {
 	MessageDialog Dialog("Pointer pressed", "Input detected");
 	Dialog.ShowAsync();
+}
+
+void D3D11AvdlApplication::OnPointerMoved(CoreWindow^ window, PointerEventArgs^ args) {
+}
+
+void D3D11AvdlApplication::OnPointerReleased(CoreWindow^ window, PointerEventArgs^ args) {
 }
 
 void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
@@ -202,8 +207,8 @@ void D3D11AvdlApplication::OnKeyUp(CoreWindow^ window, KeyEventArgs^ args) {
 
 void D3D11AvdlApplication::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
-	m_deviceResources->SetLogicalSize(Size(sender->Bounds.Width, sender->Bounds.Height));
-	m_main->CreateWindowSizeDependentResources();
+	//m_deviceResources->SetLogicalSize(Size(sender->Bounds.Width, sender->Bounds.Height));
+	//m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -224,17 +229,17 @@ void D3D11AvdlApplication::OnDpiChanged(DisplayInformation^ sender, Object^ args
 	// if it is being scaled for high resolution devices. Once the DPI is set on DeviceResources,
 	// you should always retrieve it using the GetDpi method.
 	// See DeviceResources.cpp for more details.
-	m_deviceResources->SetDpi(sender->LogicalDpi);
-	m_main->CreateWindowSizeDependentResources();
+	//m_deviceResources->SetDpi(sender->LogicalDpi);
+	//m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
 {
-	m_deviceResources->SetCurrentOrientation(sender->CurrentOrientation);
-	m_main->CreateWindowSizeDependentResources();
+	//m_deviceResources->SetCurrentOrientation(sender->CurrentOrientation);
+	//m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnDisplayContentsInvalidated(DisplayInformation^ sender, Object^ args)
 {
-	m_deviceResources->ValidateDevice();
+	//m_deviceResources->ValidateDevice();
 }
