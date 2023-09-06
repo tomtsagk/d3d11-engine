@@ -236,9 +236,9 @@ void D3D11AvdlApplication::Run()
 	// create a triangle out of vertices
 	VERTEX OurVertices[] =
 	{
-		{ 0.0f, 0.5f, -0.5f },
-		{ 0.45f, -0.5f, -0.5f },
-		{ -0.45f, -0.5f, -0.5f },
+		{ 0.0f, 0.5f, 0.5f },
+		{ 0.45f, -0.5f, 0.5f },
+		{ -0.45f, -0.5f, 0.5f },
 	};
 
 	// create the vertex buffer
