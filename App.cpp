@@ -61,6 +61,10 @@ Array<byte>^ LoadShaderFile(std::string File)
 		VertexFile.read(reinterpret_cast<char*>(FileData->Data), Length);
 		VertexFile.close();
 	}
+	else {
+		MessageDialog Dialog("Error opening shaders", "AA");
+		Dialog.ShowAsync();
+	}
 
 	return FileData;
 }
@@ -180,9 +184,6 @@ void D3D11AvdlApplication::Run()
 	// Third, use the IDXGIAdapter interface to get access to the factory
 	ComPtr<IDXGIFactory2> dxgiFactory;
 	dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), &dxgiFactory);
-
-	MessageDialog Dialog("Direct X initialised", "Graphics completed");
-	Dialog.ShowAsync();
 
 	/*
 	 * Swap chain
