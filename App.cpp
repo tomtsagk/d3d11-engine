@@ -236,9 +236,9 @@ void D3D11AvdlApplication::Run()
 	// create a triangle out of vertices
 	VERTEX OurVertices[] =
 	{
-		{ 0.0f, 0.5f, 0.0f },
-		{ 0.45f, -0.5f, 0.0f },
-		{ -0.45f, -0.5f, 0.0f },
+		{ 0.0f, 0.5f, -0.5f },
+		{ 0.45f, -0.5f, -0.5f },
+		{ -0.45f, -0.5f, -0.5f },
 	};
 
 	// create the vertex buffer
@@ -294,12 +294,12 @@ void D3D11AvdlApplication::Run()
 				m_deviceResources->Present();
 			}
 			*/
+			// set our new render target object as the active render target
+			devcon->OMSetRenderTargets(1, rendertarget.GetAddressOf(), nullptr);
+
 			// clear the back buffer to a deep blue
 			float color[4] = {0.0f, 0.2f, 0.4f, 1.0f};
 			devcon->ClearRenderTargetView(rendertarget.Get(), color);
-
-			// set our new render target object as the active render target
-			devcon->OMSetRenderTargets(1, rendertarget.GetAddressOf(), nullptr);
 
 			/*
 			 * Render triangle
