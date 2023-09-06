@@ -236,9 +236,9 @@ void D3D11AvdlApplication::Run()
 	// create a triangle out of vertices
 	VERTEX OurVertices[] =
 	{
-		{ 0.0f, 0.5f, 0.5f },
-		{ 0.45f, -0.5f, 0.5f },
-		{ -0.45f, -0.5f, 0.5f },
+		{ 0.0f, 0.5f, 0.0f },
+		{ 0.45f, -0.5f, 0.0f },
+		{ -0.45f, -0.5f, 0.0f },
 	};
 
 	// create the vertex buffer
@@ -275,7 +275,7 @@ void D3D11AvdlApplication::Run()
 	devcon->IASetInputLayout(inputlayout.Get());
 
 	float r = 0;
-	while (!m_windowClosed)
+	while (1)
 	{
 		r += 0.01;
 		if (r > 0) {
@@ -284,7 +284,7 @@ void D3D11AvdlApplication::Run()
 		//if (m_windowVisible)
 		//{
 			// window events
-			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+			Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
 			// avdl update
 
