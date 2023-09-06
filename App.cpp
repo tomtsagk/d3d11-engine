@@ -252,7 +252,6 @@ void D3D11AvdlApplication::Run()
 	/*
 	 * shaders
 	 */
-	load the shader files
 	Array<byte>^ VSFile = LoadShaderFile("VertexShader.cso");
 	Array<byte>^ PSFile = LoadShaderFile("PixelShader.cso");
 
