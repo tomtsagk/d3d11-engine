@@ -274,10 +274,15 @@ void D3D11AvdlApplication::Run()
 	dev->CreateInputLayout(ied, ARRAYSIZE(ied), VSFile->Data, VSFile->Length, &inputlayout);
 	devcon->IASetInputLayout(inputlayout.Get());
 
+	float r = 0;
 	while (!m_windowClosed)
 	{
-		if (m_windowVisible)
-		{
+		r += 0.01;
+		if (r > 0) {
+			r -= 1.0;
+		}
+		//if (m_windowVisible)
+		//{
 			// window events
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
@@ -298,7 +303,7 @@ void D3D11AvdlApplication::Run()
 			devcon->OMSetRenderTargets(1, rendertarget.GetAddressOf(), nullptr);
 
 			// clear the back buffer to a deep blue
-			float color[4] = {0.0f, 0.2f, 0.4f, 1.0f};
+			float color[4] = {r, 0.2f, 0.4f, 1.0f};
 			devcon->ClearRenderTargetView(rendertarget.Get(), color);
 
 			/*
@@ -317,11 +322,13 @@ void D3D11AvdlApplication::Run()
 
 			// switch the back buffer and the front buffer
 			swapchain->Present(1, 0);
+			/*
 		}
 		else
 		{
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
 		}
+		*/
 	}
 }
 
