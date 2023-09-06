@@ -559,6 +559,12 @@
     <FxCompile Include="Content\SampleVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
