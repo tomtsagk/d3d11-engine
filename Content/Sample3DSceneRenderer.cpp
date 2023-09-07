@@ -28,17 +28,15 @@ void avdl_log2(const char *msg, ...) {
 	const wchar_t* w_char = wid_str.c_str();
 	Platform::String^ p_string = ref new Platform::String(w_char);
 
-	//MessageDialog^ dialog = ref new MessageDialog(p_string);
-	//UICommand^ continueCommand = ref new UICommand("Ok");
-	//UICommand^ upgradeCommand = ref new UICommand("Cancel");
+	MessageDialog^ dialog = ref new MessageDialog(p_string);
+	UICommand^ continueCommand = ref new UICommand("Ok");
+	UICommand^ upgradeCommand = ref new UICommand("Cancel");
 
-	/*
 	dialog->DefaultCommandIndex = 0;
 	dialog->CancelCommandIndex = 1;
 	dialog->Commands->Append(continueCommand);
 	dialog->Commands->Append(upgradeCommand);
 	dialog->ShowAsync();
-	*/
 
 	va_end(args);
 }

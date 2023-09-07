@@ -360,8 +360,6 @@ void D3D11AvdlApplication::OnSuspending(Platform::Object^ sender, SuspendingEven
 
 	create_task([this, deferral]()
 	{
-		m_deviceResources->Trim();
-
 		// Insert your code here.
 
 		deferral->Complete();
@@ -418,7 +416,6 @@ void D3D11AvdlApplication::OnKeyUp(CoreWindow^ window, KeyEventArgs^ args) {
 
 void D3D11AvdlApplication::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
-	m_deviceResources->SetLogicalSize(Size(sender->Bounds.Width, sender->Bounds.Height));
 	m_main->CreateWindowSizeDependentResources();
 }
 
@@ -440,17 +437,14 @@ void D3D11AvdlApplication::OnDpiChanged(DisplayInformation^ sender, Object^ args
 	// if it is being scaled for high resolution devices. Once the DPI is set on DeviceResources,
 	// you should always retrieve it using the GetDpi method.
 	// See DeviceResources.cpp for more details.
-	m_deviceResources->SetDpi(sender->LogicalDpi);
 	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
 {
-	m_deviceResources->SetCurrentOrientation(sender->CurrentOrientation);
 	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnDisplayContentsInvalidated(DisplayInformation^ sender, Object^ args)
 {
-	m_deviceResources->ValidateDevice();
 }
