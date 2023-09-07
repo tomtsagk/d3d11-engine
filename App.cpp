@@ -278,7 +278,7 @@ void D3D11AvdlApplication::Run()
 	while (1)
 	{
 		r += 0.01;
-		if (r > 0) {
+		if (r > 1) {
 			r -= 1.0;
 		}
 		//if (m_windowVisible)
@@ -316,6 +316,13 @@ void D3D11AvdlApplication::Run()
 
 			// set the primitive topology
 			devcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			// set input layout ?
+			devcon->IASetInputLayout(inputlayout.Get());
+
+			// re-set shaders ?
+			devcon->VSSetShader(vertexshader.Get(), nullptr, 0);
+			devcon->PSSetShader(pixelshader.Get(), nullptr, 0);
 
 			// draw 3 vertices, starting from vertex 0
 			devcon->Draw(3, 0);
