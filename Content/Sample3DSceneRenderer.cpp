@@ -28,15 +28,17 @@ void avdl_log2(const char *msg, ...) {
 	const wchar_t* w_char = wid_str.c_str();
 	Platform::String^ p_string = ref new Platform::String(w_char);
 
-	MessageDialog^ dialog = ref new MessageDialog(p_string);
-	UICommand^ continueCommand = ref new UICommand("Ok");
-	UICommand^ upgradeCommand = ref new UICommand("Cancel");
+	//MessageDialog^ dialog = ref new MessageDialog(p_string);
+	//UICommand^ continueCommand = ref new UICommand("Ok");
+	//UICommand^ upgradeCommand = ref new UICommand("Cancel");
 
+	/*
 	dialog->DefaultCommandIndex = 0;
 	dialog->CancelCommandIndex = 1;
 	dialog->Commands->Append(continueCommand);
 	dialog->Commands->Append(upgradeCommand);
 	dialog->ShowAsync();
+	*/
 
 	va_end(args);
 }
@@ -46,7 +48,6 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	m_loadingComplete(false),
 	m_degreesPerSecond(45),
 	m_indexCount(0),
-	m_tracking(false),
 	m_deviceResources(deviceResources)
 {
 	LARGE_INTEGER frequency;
@@ -67,7 +68,7 @@ Sample3DSceneRenderer::Sample3DSceneRenderer(const std::shared_ptr<DX::DeviceRes
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 	avdl_engine_setPaused(&engine, false);
 
-	avdl_log2("scene renderer constructor done in %.3f seconds");
+	//avdl_log2("scene renderer constructor done in %.3f seconds");
 }
 
 // Initializes view parameters when the window size changes.
@@ -113,51 +114,20 @@ void Sample3DSceneRenderer::CreateWindowSizeDependentResources()
 	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 	XMStoreFloat4x4(&m_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
-	avdl_log2("scene renderer create window size dependent resources");
+	//avdl_log2("scene renderer create window size dependent resources");
 }
 
 // Called once per frame, rotates the cube and calculates the model and view matrices.
 void Sample3DSceneRenderer::Update(DX::StepTimer const& timer)
 {
-	if (!m_tracking)
-	{
-		// Convert degrees to radians, then convert seconds to rotation angle
-		float radiansPerSecond = XMConvertToRadians(m_degreesPerSecond);
-		double totalRotation = timer.GetTotalSeconds() * radiansPerSecond;
-		float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
+	// Convert degrees to radians, then convert seconds to rotation angle
+	float radiansPerSecond = XMConvertToRadians(m_degreesPerSecond);
+	double totalRotation = timer.GetTotalSeconds() * radiansPerSecond;
+	float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
+	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
 
-		Rotate(radians);
-
-	}
 	avdl_engine_update(&engine);
 	//avdl_log2("scene renderer update");
-}
-
-// Rotate the 3D cube model a set amount of radians.
-void Sample3DSceneRenderer::Rotate(float radians)
-{
-	// Prepare to pass the updated model matrix to the shader
-	XMStoreFloat4x4(&m_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
-}
-
-void Sample3DSceneRenderer::StartTracking()
-{
-	m_tracking = true;
-}
-
-// When tracking, the 3D cube can be rotated around its Y axis by tracking pointer position relative to the output screen width.
-void Sample3DSceneRenderer::TrackingUpdate(float positionX)
-{
-	if (m_tracking)
-	{
-		float radians = XM_2PI * 2.0f * positionX / m_deviceResources->GetOutputSize().Width;
-		Rotate(radians);
-	}
-}
-
-void Sample3DSceneRenderer::StopTracking()
-{
-	m_tracking = false;
 }
 
 // Renders one frame using the vertex and pixel shaders.

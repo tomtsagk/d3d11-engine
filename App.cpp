@@ -62,8 +62,6 @@ Array<byte>^ LoadShaderFile(std::string File)
 		VertexFile.close();
 	}
 	else {
-		MessageDialog Dialog("Error opening shaders", "AA");
-		Dialog.ShowAsync();
 	}
 
 	return FileData;
@@ -93,10 +91,9 @@ void D3D11AvdlApplication::Initialize(CoreApplicationView^ applicationView)
 
 	// At this point we have access to the device. 
 	// We can create the device-dependent resources.
-	//m_deviceResources = std::make_shared<DX::DeviceResources>();
+	m_deviceResources = std::make_shared<DX::DeviceResources>();
 
 	m_windowClosed = false;
-	m_windowVisible = true;
 }
 
 // Called when the CoreWindow object is created (or re-created).
@@ -129,150 +126,148 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 	DisplayInformation::DisplayContentsInvalidated +=
 		ref new TypedEventHandler<DisplayInformation^, Object^>(this, &D3D11AvdlApplication::OnDisplayContentsInvalidated);
 
-	//m_deviceResources->SetWindow(window);
+	m_deviceResources->SetWindow(window);
 }
 
 // Initializes scene resources, or loads a previously saved app state.
 void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 {
-	/*
 	if (m_main == nullptr)
 	{
 		m_main = std::unique_ptr<App2_uwp_dx11Main>(new App2_uwp_dx11Main(m_deviceResources));
 	}
-	*/
 }
 
 // This method is called after the window becomes active.
 void D3D11AvdlApplication::Run()
 {
-	// initialise avdl
-
-	// Define temporary pointers to a device and a device context
-	ComPtr<ID3D11Device> dev11;
-	ComPtr<ID3D11DeviceContext> devcon11;
-
-	// Create the device and device context objects
-	D3D11CreateDevice(
-		nullptr, // adapter
-		D3D_DRIVER_TYPE_HARDWARE,
-		nullptr, // software
-		0, // flags
-		nullptr, // feature levels
-		0, // feature levels count
-		D3D11_SDK_VERSION,
-		&dev11, // device
-		nullptr, // feature level variable
-		&devcon11 // device context
-	);
-
-	// Convert the pointers from the DirectX 11 versions to the DirectX 11.1 versions
-	dev11.As(&dev);
-	devcon11.As(&devcon);
-
-	/*
-	 * Get Factory
-	 */
-	// First, convert our ID3D11Device1 into an IDXGIDevice1
-	ComPtr<IDXGIDevice1> dxgiDevice;
-	dev.As(&dxgiDevice);
-
-	// Second, use the IDXGIDevice1 interface to get access to the adapter
-	ComPtr<IDXGIAdapter> dxgiAdapter;
-	dxgiDevice->GetAdapter(&dxgiAdapter);
-
-	// Third, use the IDXGIAdapter interface to get access to the factory
-	ComPtr<IDXGIFactory2> dxgiFactory;
-	dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), &dxgiFactory);
-
-	/*
-	 * Swap chain
-	 */
-	// set up the swap chain description
-	DXGI_SWAP_CHAIN_DESC1 scd = {0};
-	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;    // how the swap chain should be used
-	scd.BufferCount = 2;                                  // a front buffer and a back buffer
-	scd.Format = DXGI_FORMAT_B8G8R8A8_UNORM;              // the most common swap chain format
-	scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;    // the recommended flip mode
-	scd.SampleDesc.Count = 1;                             // disable anti-aliasing
-
-	// swapchain creation
-	CoreWindow^ Window = CoreWindow::GetForCurrentThread();    // get the window pointer
-
-	dxgiFactory->CreateSwapChainForCoreWindow(
-		dev.Get(),                                  // address of the device
-		reinterpret_cast<IUnknown*>(Window),        // address of the window
-		&scd,                                       // address of the swap chain description
-		nullptr,                                    // advanced
-		&swapchain                                // address of the new swap chain pointer
-	);
-
-	/*
-	 * set render target
-	 */
-	// get a pointer directly to the back buffer
-	ComPtr<ID3D11Texture2D> backbuffer;
-	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
-
-	// create a render target pointing to the back buffer
-	dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &rendertarget);
-
-	/*
-	 * View port
-	 */
-	// set the viewport
-	D3D11_VIEWPORT viewport = {0};
-
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = Window->Bounds.Width;
-	viewport.Height = Window->Bounds.Height;
-
-	devcon->RSSetViewports(1, &viewport);
-
-	/*
-	 * Triangle
-	 */
-	// create a triangle out of vertices
-	VERTEX OurVertices[] =
-	{
-		{ 0.0f, 0.5f, 0.0f },
-		{ 0.45f, -0.5f, 0.0f },
-		{ -0.45f, -0.5f, 0.0f },
-	};
-
-	// create the vertex buffer
-	D3D11_BUFFER_DESC bd = {0};
-	bd.ByteWidth = sizeof(VERTEX) * ARRAYSIZE(OurVertices);
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-	D3D11_SUBRESOURCE_DATA srd = {OurVertices, 0, 0};
-
-	dev->CreateBuffer(&bd, &srd, &vertexbuffer);
-
-	/*
-	 * shaders
-	 */
-	Array<byte>^ VSFile = LoadShaderFile("VertexShader.cso");
-	Array<byte>^ PSFile = LoadShaderFile("PixelShader.cso");
-
-	// create the shader objects
-	dev->CreateVertexShader(VSFile->Data, VSFile->Length, nullptr, &vertexshader);
-	dev->CreatePixelShader(PSFile->Data, PSFile->Length, nullptr, &pixelshader);
-
-	// set the shader objects as the active shaders
-	devcon->VSSetShader(vertexshader.Get(), nullptr, 0);
-	devcon->PSSetShader(pixelshader.Get(), nullptr, 0);
-
-	// initialize input layout
-	D3D11_INPUT_ELEMENT_DESC ied[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-
-	// create and set the input layout
-	dev->CreateInputLayout(ied, ARRAYSIZE(ied), VSFile->Data, VSFile->Length, &inputlayout);
-	devcon->IASetInputLayout(inputlayout.Get());
+//	// initialise avdl
+//
+//	// Define temporary pointers to a device and a device context
+//	ComPtr<ID3D11Device> dev11;
+//	ComPtr<ID3D11DeviceContext> devcon11;
+//
+//	// Create the device and device context objects
+//	D3D11CreateDevice(
+//		nullptr, // adapter
+//		D3D_DRIVER_TYPE_HARDWARE,
+//		nullptr, // software
+//		0, // flags
+//		nullptr, // feature levels
+//		0, // feature levels count
+//		D3D11_SDK_VERSION,
+//		&dev11, // device
+//		nullptr, // feature level variable
+//		&devcon11 // device context
+//	);
+//
+//	// Convert the pointers from the DirectX 11 versions to the DirectX 11.1 versions
+//	dev11.As(&dev);
+//	devcon11.As(&devcon);
+//
+//	/*
+//	 * Get Factory
+//	 */
+//	// First, convert our ID3D11Device1 into an IDXGIDevice1
+//	ComPtr<IDXGIDevice1> dxgiDevice;
+//	dev.As(&dxgiDevice);
+//
+//	// Second, use the IDXGIDevice1 interface to get access to the adapter
+//	ComPtr<IDXGIAdapter> dxgiAdapter;
+//	dxgiDevice->GetAdapter(&dxgiAdapter);
+//
+//	// Third, use the IDXGIAdapter interface to get access to the factory
+//	ComPtr<IDXGIFactory2> dxgiFactory;
+//	dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), &dxgiFactory);
+//
+//	/*
+//	 * Swap chain
+//	 */
+//	// set up the swap chain description
+//	DXGI_SWAP_CHAIN_DESC1 scd = {0};
+//	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;    // how the swap chain should be used
+//	scd.BufferCount = 2;                                  // a front buffer and a back buffer
+//	scd.Format = DXGI_FORMAT_B8G8R8A8_UNORM;              // the most common swap chain format
+//	scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;    // the recommended flip mode
+//	scd.SampleDesc.Count = 1;                             // disable anti-aliasing
+//
+//	// swapchain creation
+//	CoreWindow^ Window = CoreWindow::GetForCurrentThread();    // get the window pointer
+//
+//	dxgiFactory->CreateSwapChainForCoreWindow(
+//		dev.Get(),                                  // address of the device
+//		reinterpret_cast<IUnknown*>(Window),        // address of the window
+//		&scd,                                       // address of the swap chain description
+//		nullptr,                                    // advanced
+//		&swapchain                                // address of the new swap chain pointer
+//	);
+//
+//	/*
+//	 * set render target
+//	 */
+//	// get a pointer directly to the back buffer
+//	ComPtr<ID3D11Texture2D> backbuffer;
+//	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
+//
+//	// create a render target pointing to the back buffer
+//	dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &rendertarget);
+//
+//	/*
+//	 * View port
+//	 */
+//	// set the viewport
+//	D3D11_VIEWPORT viewport = {0};
+//
+//	viewport.TopLeftX = 0;
+//	viewport.TopLeftY = 0;
+//	viewport.Width = Window->Bounds.Width;
+//	viewport.Height = Window->Bounds.Height;
+//
+//	devcon->RSSetViewports(1, &viewport);
+//
+//	/*
+//	 * Triangle
+//	 */
+//	// create a triangle out of vertices
+//	VERTEX OurVertices[] =
+//	{
+//		{ 0.0f, 0.5f, 0.0f },
+//		{ 0.45f, -0.5f, 0.0f },
+//		{ -0.45f, -0.5f, 0.0f },
+//	};
+//
+//	// create the vertex buffer
+//	D3D11_BUFFER_DESC bd = {0};
+//	bd.ByteWidth = sizeof(VERTEX) * ARRAYSIZE(OurVertices);
+//	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+//
+//	D3D11_SUBRESOURCE_DATA srd = {OurVertices, 0, 0};
+//
+//	dev->CreateBuffer(&bd, &srd, &vertexbuffer);
+//
+//	/*
+//	 * shaders
+//	 */
+//	Array<byte>^ VSFile = LoadShaderFile("VertexShader.cso");
+//	Array<byte>^ PSFile = LoadShaderFile("PixelShader.cso");
+//
+//	// create the shader objects
+//	dev->CreateVertexShader(VSFile->Data, VSFile->Length, nullptr, &vertexshader);
+//	dev->CreatePixelShader(PSFile->Data, PSFile->Length, nullptr, &pixelshader);
+//
+//	// set the shader objects as the active shaders
+//	devcon->VSSetShader(vertexshader.Get(), nullptr, 0);
+//	devcon->PSSetShader(pixelshader.Get(), nullptr, 0);
+//
+//	// initialize input layout
+//	D3D11_INPUT_ELEMENT_DESC ied[] =
+//	{
+//		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+//	};
+//
+//	// create and set the input layout
+//	dev->CreateInputLayout(ied, ARRAYSIZE(ied), VSFile->Data, VSFile->Length, &inputlayout);
+//	devcon->IASetInputLayout(inputlayout.Get());
 
 	float r = 0;
 	while (1)
@@ -284,12 +279,12 @@ void D3D11AvdlApplication::Run()
 		//if (m_windowVisible)
 		//{
 			// window events
-			Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+			//Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
 			// avdl update
 
 			// avdl render
-			/*
 			// game update
 			m_main->Update();
 
@@ -298,7 +293,7 @@ void D3D11AvdlApplication::Run()
 			{
 				m_deviceResources->Present();
 			}
-			*/
+			/*
 			// set our new render target object as the active render target
 			devcon->OMSetRenderTargets(1, rendertarget.GetAddressOf(), nullptr);
 
@@ -308,7 +303,7 @@ void D3D11AvdlApplication::Run()
 
 			/*
 			 * Render triangle
-			 */
+			 *
 			// set the vertex buffer
 			UINT stride = sizeof(VERTEX);
 			UINT offset = 0;
@@ -329,6 +324,7 @@ void D3D11AvdlApplication::Run()
 
 			// switch the back buffer and the front buffer
 			swapchain->Present(1, 0);
+			*/
 			/*
 		}
 		else
@@ -364,7 +360,7 @@ void D3D11AvdlApplication::OnSuspending(Platform::Object^ sender, SuspendingEven
 
 	create_task([this, deferral]()
 	{
-		//m_deviceResources->Trim();
+		m_deviceResources->Trim();
 
 		// Insert your code here.
 
@@ -382,8 +378,8 @@ void D3D11AvdlApplication::OnResuming(Platform::Object^ sender, Platform::Object
 }
 
 void D3D11AvdlApplication::OnPointerPressed(CoreWindow^ window, PointerEventArgs^ args) {
-	MessageDialog Dialog("Pointer pressed", "Input detected");
-	Dialog.ShowAsync();
+	//MessageDialog Dialog("Pointer pressed", "Input detected");
+	//Dialog.ShowAsync();
 }
 
 void D3D11AvdlApplication::OnPointerMoved(CoreWindow^ window, PointerEventArgs^ args) {
@@ -395,18 +391,12 @@ void D3D11AvdlApplication::OnPointerReleased(CoreWindow^ window, PointerEventArg
 void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	if(args->VirtualKey == VirtualKey::A)
 	{
-		MessageDialog Dialog("Key 'A' pressed", "Input detected");
-		Dialog.ShowAsync();
 	}
 	else
 	if(args->VirtualKey == VirtualKey::GamepadA)
 	{
-		MessageDialog Dialog("Gamepad 'A' pressed", "Input detected");
-		Dialog.ShowAsync();
 	}
 	else {
-		MessageDialog Dialog("Unknown key pressed", "Input detected");
-		Dialog.ShowAsync();
 	}
 }
 
@@ -428,13 +418,13 @@ void D3D11AvdlApplication::OnKeyUp(CoreWindow^ window, KeyEventArgs^ args) {
 
 void D3D11AvdlApplication::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
-	//m_deviceResources->SetLogicalSize(Size(sender->Bounds.Width, sender->Bounds.Height));
-	//m_main->CreateWindowSizeDependentResources();
+	m_deviceResources->SetLogicalSize(Size(sender->Bounds.Width, sender->Bounds.Height));
+	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
-	m_windowVisible = args->Visible;
+	//m_windowVisible = args->Visible;
 }
 
 void D3D11AvdlApplication::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
@@ -450,17 +440,17 @@ void D3D11AvdlApplication::OnDpiChanged(DisplayInformation^ sender, Object^ args
 	// if it is being scaled for high resolution devices. Once the DPI is set on DeviceResources,
 	// you should always retrieve it using the GetDpi method.
 	// See DeviceResources.cpp for more details.
-	//m_deviceResources->SetDpi(sender->LogicalDpi);
-	//m_main->CreateWindowSizeDependentResources();
+	m_deviceResources->SetDpi(sender->LogicalDpi);
+	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
 {
-	//m_deviceResources->SetCurrentOrientation(sender->CurrentOrientation);
-	//m_main->CreateWindowSizeDependentResources();
+	m_deviceResources->SetCurrentOrientation(sender->CurrentOrientation);
+	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnDisplayContentsInvalidated(DisplayInformation^ sender, Object^ args)
 {
-	//m_deviceResources->ValidateDevice();
+	m_deviceResources->ValidateDevice();
 }

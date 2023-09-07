@@ -74,8 +74,7 @@ DX::DeviceResources::DeviceResources() :
 	m_nativeOrientation(DisplayOrientations::None),
 	m_currentOrientation(DisplayOrientations::None),
 	m_dpi(-1.0f),
-	m_effectiveDpi(-1.0f),
-	m_deviceNotify(nullptr)
+	m_effectiveDpi(-1.0f)
 {
 	CreateDeviceIndependentResources();
 	CreateDeviceResources();
@@ -93,34 +92,6 @@ void DX::DeviceResources::CreateDeviceIndependentResources()
 	options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
 
-	// Initialize the Direct2D Factory.
-	DX::ThrowIfFailed(
-		D2D1CreateFactory(
-			D2D1_FACTORY_TYPE_SINGLE_THREADED,
-			__uuidof(ID2D1Factory3),
-			&options,
-			&m_d2dFactory
-			)
-		);
-
-	// Initialize the DirectWrite Factory.
-	DX::ThrowIfFailed(
-		DWriteCreateFactory(
-			DWRITE_FACTORY_TYPE_SHARED,
-			__uuidof(IDWriteFactory3),
-			&m_dwriteFactory
-			)
-		);
-
-	// Initialize the Windows Imaging Component (WIC) Factory.
-	DX::ThrowIfFailed(
-		CoCreateInstance(
-			CLSID_WICImagingFactory2,
-			nullptr,
-			CLSCTX_INPROC_SERVER,
-			IID_PPV_ARGS(&m_wicFactory)
-			)
-		);
 }
 
 // Configures the Direct3D device, and stores handles to it and the device context.
@@ -202,22 +173,6 @@ void DX::DeviceResources::CreateDeviceResources()
 		context.As(&m_d3dContext)
 		);
 
-	// Create the Direct2D device object and a corresponding context.
-	ComPtr<IDXGIDevice3> dxgiDevice;
-	DX::ThrowIfFailed(
-		m_d3dDevice.As(&dxgiDevice)
-		);
-
-	DX::ThrowIfFailed(
-		m_d2dFactory->CreateDevice(dxgiDevice.Get(), &m_d2dDevice)
-		);
-
-	DX::ThrowIfFailed(
-		m_d2dDevice->CreateDeviceContext(
-			D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
-			&m_d2dContext
-			)
-		);
 }
 
 // These resources need to be recreated every time the window size is changed.
@@ -227,9 +182,7 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 	ID3D11RenderTargetView* nullViews[] = {nullptr};
 	m_d3dContext->OMSetRenderTargets(ARRAYSIZE(nullViews), nullViews, nullptr);
 	m_d3dRenderTargetView = nullptr;
-	m_d2dContext->SetTarget(nullptr);
-	m_d2dTargetBitmap = nullptr;
-	m_d3dDepthStencilView = nullptr;
+	//m_d3dDepthStencilView = nullptr;
 	m_d3dContext->Flush1(D3D11_CONTEXT_TYPE_ALL, nullptr);
 
 	UpdateRenderTargetSize();
@@ -333,28 +286,18 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 	switch (displayRotation)
 	{
 	case DXGI_MODE_ROTATION_IDENTITY:
-		m_orientationTransform2D = Matrix3x2F::Identity();
 		m_orientationTransform3D = ScreenRotation::Rotation0;
 		break;
 
 	case DXGI_MODE_ROTATION_ROTATE90:
-		m_orientationTransform2D = 
-			Matrix3x2F::Rotation(90.0f) *
-			Matrix3x2F::Translation(m_logicalSize.Height, 0.0f);
 		m_orientationTransform3D = ScreenRotation::Rotation270;
 		break;
 
 	case DXGI_MODE_ROTATION_ROTATE180:
-		m_orientationTransform2D = 
-			Matrix3x2F::Rotation(180.0f) *
-			Matrix3x2F::Translation(m_logicalSize.Width, m_logicalSize.Height);
 		m_orientationTransform3D = ScreenRotation::Rotation180;
 		break;
 
 	case DXGI_MODE_ROTATION_ROTATE270:
-		m_orientationTransform2D = 
-			Matrix3x2F::Rotation(270.0f) *
-			Matrix3x2F::Translation(0.0f, m_logicalSize.Width);
 		m_orientationTransform3D = ScreenRotation::Rotation90;
 		break;
 
@@ -380,6 +323,7 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 			)
 		);
 
+	/*
 	// Create a depth stencil view for use with 3D rendering if needed.
 	CD3D11_TEXTURE2D_DESC1 depthStencilDesc(
 		DXGI_FORMAT_D24_UNORM_S8_UINT, 
@@ -407,6 +351,7 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 			&m_d3dDepthStencilView
 			)
 		);
+		*/
 	
 	// Set the 3D rendering viewport to target the entire window.
 	m_screenViewport = CD3D11_VIEWPORT(
@@ -418,34 +363,6 @@ void DX::DeviceResources::CreateWindowSizeDependentResources()
 
 	m_d3dContext->RSSetViewports(1, &m_screenViewport);
 
-	// Create a Direct2D target bitmap associated with the
-	// swap chain back buffer and set it as the current target.
-	D2D1_BITMAP_PROPERTIES1 bitmapProperties = 
-		D2D1::BitmapProperties1(
-			D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-			D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-			m_dpi,
-			m_dpi
-			);
-
-	ComPtr<IDXGISurface2> dxgiBackBuffer;
-	DX::ThrowIfFailed(
-		m_swapChain->GetBuffer(0, IID_PPV_ARGS(&dxgiBackBuffer))
-		);
-
-	DX::ThrowIfFailed(
-		m_d2dContext->CreateBitmapFromDxgiSurface(
-			dxgiBackBuffer.Get(),
-			&bitmapProperties,
-			&m_d2dTargetBitmap
-			)
-		);
-
-	m_d2dContext->SetTarget(m_d2dTargetBitmap.Get());
-	m_d2dContext->SetDpi(m_effectiveDpi, m_effectiveDpi);
-
-	// Grayscale text anti-aliasing is recommended for all Microsoft Store apps.
-	m_d2dContext->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE);
 }
 
 // Determine the dimensions of the render target and whether it will be scaled down.
@@ -489,7 +406,6 @@ void DX::DeviceResources::SetWindow(CoreWindow^ window)
 	m_nativeOrientation = currentDisplayInformation->NativeOrientation;
 	m_currentOrientation = currentDisplayInformation->CurrentOrientation;
 	m_dpi = currentDisplayInformation->LogicalDpi;
-	m_d2dContext->SetDpi(m_dpi, m_dpi);
 
 	CreateWindowSizeDependentResources();
 }
@@ -514,7 +430,6 @@ void DX::DeviceResources::SetDpi(float dpi)
 		// When the display DPI changes, the logical size of the window (measured in Dips) also changes and needs to be updated.
 		m_logicalSize = Windows::Foundation::Size(m_window->Bounds.Width, m_window->Bounds.Height);
 
-		m_d2dContext->SetDpi(m_dpi, m_dpi);
 		CreateWindowSizeDependentResources();
 	}
 }
@@ -586,25 +501,9 @@ void DX::DeviceResources::HandleDeviceLost()
 {
 	m_swapChain = nullptr;
 
-	if (m_deviceNotify != nullptr)
-	{
-		m_deviceNotify->OnDeviceLost();
-	}
-
 	CreateDeviceResources();
-	m_d2dContext->SetDpi(m_dpi, m_dpi);
 	CreateWindowSizeDependentResources();
 
-	if (m_deviceNotify != nullptr)
-	{
-		m_deviceNotify->OnDeviceRestored();
-	}
-}
-
-// Register our DeviceNotify to be informed on device lost and creation.
-void DX::DeviceResources::RegisterDeviceNotify(DX::IDeviceNotify* deviceNotify)
-{
-	m_deviceNotify = deviceNotify;
 }
 
 // Call this method when the app suspends. It provides a hint to the driver that the app 
@@ -632,7 +531,7 @@ void DX::DeviceResources::Present()
 	m_d3dContext->DiscardView1(m_d3dRenderTargetView.Get(), nullptr, 0);
 
 	// Discard the contents of the depth stencil.
-	m_d3dContext->DiscardView1(m_d3dDepthStencilView.Get(), nullptr, 0);
+	//m_d3dContext->DiscardView1(m_d3dDepthStencilView.Get(), nullptr, 0);
 
 	// If the device was removed either by a disconnection or a driver upgrade, we 
 	// must recreate all device resources.

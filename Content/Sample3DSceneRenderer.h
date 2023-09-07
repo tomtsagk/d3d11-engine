@@ -16,14 +16,6 @@ namespace App2_uwp_dx11
 		void ReleaseDeviceDependentResources();
 		void Update(DX::StepTimer const& timer);
 		void Render();
-		void StartTracking();
-		void TrackingUpdate(float positionX);
-		void StopTracking();
-		bool IsTracking() { return m_tracking; }
-
-
-	private:
-		void Rotate(float radians);
 
 	private:
 		// Cached pointer to device resources.
@@ -44,7 +36,6 @@ namespace App2_uwp_dx11
 		// Variables used with the rendering loop.
 		bool	m_loadingComplete;
 		float	m_degreesPerSecond;
-		bool	m_tracking;
 	};
 }
 

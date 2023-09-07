@@ -42,10 +42,9 @@ namespace App2_uwp_dx11
 		void OnDisplayContentsInvalidated(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
 
 	private:
-		//std::shared_ptr<DX::DeviceResources> m_deviceResources;
-		//std::unique_ptr<App2_uwp_dx11Main> m_main;
+		std::shared_ptr<DX::DeviceResources> m_deviceResources;
+		std::unique_ptr<App2_uwp_dx11Main> m_main;
 		bool m_windowClosed;
-		bool m_windowVisible;
 	};
 }
 
