@@ -2,8 +2,8 @@
 #include "App.h"
 
 #include <ppltasks.h>
-
-using namespace App2_uwp_dx11;
+#include "..\avdl_engine.h"
+#include <dd_game.h>
 
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
@@ -20,11 +20,49 @@ using namespace Microsoft::WRL;
 using namespace Platform;
 using namespace DirectX;
 
+// Constant buffer used to send MVP matrices to the vertex shader.
+struct ModelViewProjectionConstantBuffer
+{
+	DirectX::XMFLOAT4X4 model;
+	DirectX::XMFLOAT4X4 view;
+	DirectX::XMFLOAT4X4 projection;
+};
+
+// Used to send per-vertex data to the vertex shader.
+struct VertexPositionColor
+{
+	DirectX::XMFLOAT3 pos;
+	DirectX::XMFLOAT3 color;
+};
+
 // parts of `avdl_graphics`
 ComPtr<ID3D11Device1> dev;
 ComPtr<ID3D11DeviceContext1> devcon;
 ComPtr<IDXGISwapChain1> swapchain;
 ComPtr<ID3D11RenderTargetView> rendertarget;
+
+ComPtr<ID3D11Device3> avdl_d3dDevice;
+ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
+ComPtr<IDXGISwapChain3> avdl_swapChain;
+ComPtr<ID3D11RenderTargetView1>	avdl_d3dRenderTargetView;
+
+// Constants used to calculate screen rotations
+namespace ScreenRotation
+{
+	// 0-degree Z-rotation
+	static const XMFLOAT4X4 Rotation0(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+		);
+};
+
+// mesh
+ComPtr<ID3D11Buffer> avdl_constantBuffer;
+ModelViewProjectionConstantBuffer avdl_constantBufferData;
+
+Size avdl_d3dRenderTargetSize;
 
 // a struct to represent a single vertex
 struct VERTEX
@@ -33,11 +71,47 @@ struct VERTEX
 };
 
 ComPtr<ID3D11Buffer> vertexbuffer;    // defined in CGame
+ComPtr<ID3D11Buffer> avdl_vertexBuffer;
 
 // shaders
 ComPtr<ID3D11VertexShader> vertexshader;
 ComPtr<ID3D11PixelShader> pixelshader;
 ComPtr<ID3D11InputLayout> inputlayout;
+
+ComPtr<ID3D11VertexShader> avdl_vertexShader;
+ComPtr<ID3D11PixelShader> avdl_pixelShader;
+ComPtr<ID3D11InputLayout> avdl_inputLayout;
+
+double totalRotation = 0.0;
+
+extern "C" struct avdl_engine engine;
+
+void avdl_log2(const char *msg, ...) {
+
+	va_list args;
+	va_start(args, msg);
+
+	char buffer[1024];
+	vsnprintf(buffer, 1024, msg, args);
+
+	std::string s_str = std::string(buffer);
+	std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
+	const wchar_t* w_char = wid_str.c_str();
+	Platform::String^ p_string = ref new Platform::String(w_char);
+
+	MessageDialog^ dialog = ref new MessageDialog(p_string);
+	UICommand^ continueCommand = ref new UICommand("Ok");
+	UICommand^ upgradeCommand = ref new UICommand("Cancel");
+
+	dialog->DefaultCommandIndex = 0;
+	dialog->CancelCommandIndex = 1;
+	dialog->Commands->Append(continueCommand);
+	dialog->Commands->Append(upgradeCommand);
+	dialog->ShowAsync();
+
+	va_end(args);
+}
+
 
 #include <fstream>
 
@@ -89,9 +163,43 @@ void D3D11AvdlApplication::Initialize(CoreApplicationView^ applicationView)
 	CoreApplication::Suspending += ref new EventHandler<SuspendingEventArgs^>(this, &D3D11AvdlApplication::OnSuspending);
 	CoreApplication::Resuming   += ref new EventHandler<Platform::Object^>   (this, &D3D11AvdlApplication::OnResuming);
 
-	// At this point we have access to the device. 
-	// We can create the device-dependent resources.
-	m_deviceResources = std::make_shared<DX::DeviceResources>();
+	// This flag adds support for surfaces with a different color channel ordering
+	// than the API default. It is required for compatibility with Direct2D.
+	UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+	/*
+#if defined(_DEBUG)
+	if (DX::SdkLayersAvailable())
+	{
+		// If the project is in a debug build, enable debugging via SDK Layers with this flag.
+		creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	}
+#endif
+*/
+
+	// initialise avdl
+
+	// Create the Direct3D 11 API device object and a corresponding context.
+	ComPtr<ID3D11Device> device;
+	ComPtr<ID3D11DeviceContext> context;
+
+	// Create the device and device context objects
+	HRESULT hr = D3D11CreateDevice(
+		nullptr, // adapter
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr, // software
+		creationFlags, // flags
+		nullptr, // feature levels
+		0, // feature levels count
+		D3D11_SDK_VERSION,
+		&device, // device
+		nullptr, // feature level variable
+		&context // device context
+	);
+
+	// Store pointers to the Direct3D 11.3 API device and immediate context.
+	device.As(&avdl_d3dDevice);
+	context.As(&avdl_d3dContext);
 
 	m_windowClosed = false;
 }
@@ -126,105 +234,253 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 	DisplayInformation::DisplayContentsInvalidated +=
 		ref new TypedEventHandler<DisplayInformation^, Object^>(this, &D3D11AvdlApplication::OnDisplayContentsInvalidated);
 
-	m_deviceResources->SetWindow(window);
+	// Clear the previous window size specific context.
+	ID3D11RenderTargetView* nullViews[] = {nullptr};
+	avdl_d3dContext->OMSetRenderTargets(ARRAYSIZE(nullViews), nullViews, nullptr);
+	avdl_d3dRenderTargetView = nullptr;
+	avdl_d3dContext->Flush1(D3D11_CONTEXT_TYPE_ALL, nullptr);
+
+	CoreWindow^ Window = CoreWindow::GetForCurrentThread();
+	avdl_d3dRenderTargetSize.Width = Window->Bounds.Width;
+	avdl_d3dRenderTargetSize.Height = Window->Bounds.Height;
+
+	if (avdl_swapChain != nullptr)
+	{
+		// If the swap chain already exists, resize it.
+		HRESULT hr = avdl_swapChain->ResizeBuffers(
+			2, // Double-buffered swap chain.
+			lround(avdl_d3dRenderTargetSize.Width),
+			lround(avdl_d3dRenderTargetSize.Height),
+			DXGI_FORMAT_B8G8R8A8_UNORM,
+			0
+		);
+	}
+	else
+	{
+		// Otherwise, create a new one using the same adapter as the existing Direct3D device.
+		DXGI_SCALING scaling = DXGI_SCALING_NONE;
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
+
+		swapChainDesc.Width = lround(avdl_d3dRenderTargetSize.Width);		// Match the size of the window.
+		swapChainDesc.Height = lround(avdl_d3dRenderTargetSize.Height);
+		swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;				// This is the most common swap chain format.
+		swapChainDesc.Stereo = false;
+		swapChainDesc.SampleDesc.Count = 1;								// Don't use multi-sampling.
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = 2;									// Use double-buffering to minimize latency.
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;	// All Microsoft Store apps must use this SwapEffect.
+		swapChainDesc.Flags = 0;
+		swapChainDesc.Scaling = scaling;
+		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+
+		// This sequence obtains the DXGI factory that was used to create the Direct3D device above.
+		ComPtr<IDXGIDevice3> dxgiDevice;
+		avdl_d3dDevice.As(&dxgiDevice);
+
+		ComPtr<IDXGIAdapter> dxgiAdapter;
+		dxgiDevice->GetAdapter(&dxgiAdapter);
+
+		ComPtr<IDXGIFactory4> dxgiFactory;
+		dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
+
+		ComPtr<IDXGISwapChain1> swapChain;
+		dxgiFactory->CreateSwapChainForCoreWindow(
+			avdl_d3dDevice.Get(),
+			reinterpret_cast<IUnknown*>(window),
+			&swapChainDesc,
+			nullptr,
+			&swapChain
+		);
+		swapChain.As(&avdl_swapChain);
+
+		// Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
+		// ensures that the application will only render after each VSync, minimizing power consumption.
+		dxgiDevice->SetMaximumFrameLatency(1);
+	}
+
+	// Create a render target view of the swap chain back buffer.
+	ComPtr<ID3D11Texture2D1> backBuffer;
+	avdl_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
+
+	avdl_d3dDevice->CreateRenderTargetView1(
+		backBuffer.Get(),
+		nullptr,
+		&avdl_d3dRenderTargetView
+	);
+
+	// Set the 3D rendering viewport to target the entire window.
+	D3D11_VIEWPORT avdl_screenViewport = CD3D11_VIEWPORT(
+		0.0f,
+		0.0f,
+		Window->Bounds.Width,
+		Window->Bounds.Height
+		);
+
+	avdl_d3dContext->RSSetViewports(1, &avdl_screenViewport);
+
+	// Create window size dependent resources
+	/*
+	CoreWindow^ Window = CoreWindow::GetForCurrentThread();
+	float aspectRatio = Window->Bounds.Width /Window->Bounds.Height;
+	float fovAngleY = 70.0f * XM_PI / 180.0f;
+
+	// This is a simple example of change that can be made when the app is in
+	// portrait or snapped view.
+	if (aspectRatio < 1.0f)
+	{
+		fovAngleY *= 2.0f;
+	}
+
+	// Note that the OrientationTransform3D matrix is post-multiplied here
+	// in order to correctly orient the scene to match the display orientation.
+	// This post-multiplication step is required for any draw calls that are
+	// made to the swap chain render target. For draw calls to other targets,
+	// this transform should not be applied.
+
+	// This sample makes use of a right-handed coordinate system using row-major matrices.
+	XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovRH(
+		fovAngleY,
+		aspectRatio,
+		0.01f,
+		100.0f
+		);
+
+	XMFLOAT4X4 orientation = ScreenRotation::Rotation0;
+
+	XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+
+	XMStoreFloat4x4(
+		&avdl_constantBufferData.projection,
+		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
+		);
+
+	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
+	static const XMVECTORF32 eye = { 0.0f, 0.7f, 1.5f, 0.0f };
+	static const XMVECTORF32 at = { 0.0f, -0.1f, 0.0f, 0.0f };
+	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
+
+	XMStoreFloat4x4(&avdl_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+	//avdl_log2("scene renderer create window size dependent resources");
+	*/
 }
 
 // Initializes scene resources, or loads a previously saved app state.
 void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 {
-	if (m_main == nullptr)
+	Array<byte>^ VSFile = LoadShaderFile("SampleVertexShader.cso");
+	Array<byte>^ PSFile = LoadShaderFile("SamplePixelShader.cso");
+	avdl_d3dDevice->CreateVertexShader(
+		VSFile->Data,
+		VSFile->Length,
+		nullptr,
+		&avdl_vertexShader
+	);
+	avdl_d3dDevice->CreatePixelShader(
+		PSFile->Data,
+		PSFile->Length,
+		nullptr,
+		&avdl_pixelShader
+	);
+
+	static const D3D11_INPUT_ELEMENT_DESC vertexDesc [] =
 	{
-		m_main = std::unique_ptr<App2_uwp_dx11Main>(new App2_uwp_dx11Main(m_deviceResources));
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	avdl_d3dDevice->CreateInputLayout(
+		vertexDesc,
+		ARRAYSIZE(vertexDesc),
+		VSFile->Data,
+		VSFile->Length,
+		&avdl_inputLayout
+	);
+
+	CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer) , D3D11_BIND_CONSTANT_BUFFER);
+	avdl_d3dDevice->CreateBuffer(
+		&constantBufferDesc,
+		nullptr,
+		&avdl_constantBuffer
+	);
+
+	// Load mesh vertices. Each vertex has a position and a color.
+	static const VertexPositionColor cubeVertices[] = 
+	{
+		{XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
+		{XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
+		{XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
+
+		{XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
+		{XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
+		{XMFLOAT3( 0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
+
+		{XMFLOAT3( 0.5f,  0.5f, -0.5f), XMFLOAT3(0.7f, 0.5f, 0.5f)},
+		{XMFLOAT3( 0.5f,  0.5f,  0.5f), XMFLOAT3(0.5f, 0.7f, 0.5f)},
+		{XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.5f, 0.5f, 0.7f)},
+	};
+
+	D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
+	vertexBufferData.pSysMem = cubeVertices;
+	vertexBufferData.SysMemPitch = 0;
+	vertexBufferData.SysMemSlicePitch = 0;
+	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
+	avdl_d3dDevice->CreateBuffer(
+		&vertexBufferDesc,
+		&vertexBufferData,
+		&avdl_vertexBuffer
+	);
+
+	CoreWindow^ Window = CoreWindow::GetForCurrentThread();
+	float aspectRatio = Window->Bounds.Width /Window->Bounds.Height;
+	float fovAngleY = 70.0f * XM_PI / 180.0f;
+
+	// This is a simple example of change that can be made when the app is in
+	// portrait or snapped view.
+	if (aspectRatio < 1.0f)
+	{
+		fovAngleY *= 2.0f;
 	}
+
+	// Note that the OrientationTransform3D matrix is post-multiplied here
+	// in order to correctly orient the scene to match the display orientation.
+	// This post-multiplication step is required for any draw calls that are
+	// made to the swap chain render target. For draw calls to other targets,
+	// this transform should not be applied.
+
+	// This sample makes use of a right-handed coordinate system using row-major matrices.
+	XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovRH(
+		fovAngleY,
+		aspectRatio,
+		0.01f,
+		100.0f
+		);
+
+	XMFLOAT4X4 orientation = ScreenRotation::Rotation0;
+
+	XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+
+	XMStoreFloat4x4(
+		&avdl_constantBufferData.projection,
+		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
+		);
+
+	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
+	static const XMVECTORF32 eye = { 0.0f, 0.7f, 1.5f, 0.0f };
+	static const XMVECTORF32 at = { 0.0f, -0.1f, 0.0f, 0.0f };
+	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
+
+	XMStoreFloat4x4(&avdl_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+	//avdl_log2("scene renderer create window size dependent resources");
+
+	avdl_engine_init(&engine);
+	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
+	avdl_engine_setPaused(&engine, false);
 }
 
 // This method is called after the window becomes active.
 void D3D11AvdlApplication::Run()
 {
-//	// initialise avdl
-//
-//	// Define temporary pointers to a device and a device context
-//	ComPtr<ID3D11Device> dev11;
-//	ComPtr<ID3D11DeviceContext> devcon11;
-//
-//	// Create the device and device context objects
-//	D3D11CreateDevice(
-//		nullptr, // adapter
-//		D3D_DRIVER_TYPE_HARDWARE,
-//		nullptr, // software
-//		0, // flags
-//		nullptr, // feature levels
-//		0, // feature levels count
-//		D3D11_SDK_VERSION,
-//		&dev11, // device
-//		nullptr, // feature level variable
-//		&devcon11 // device context
-//	);
-//
-//	// Convert the pointers from the DirectX 11 versions to the DirectX 11.1 versions
-//	dev11.As(&dev);
-//	devcon11.As(&devcon);
-//
-//	/*
-//	 * Get Factory
-//	 */
-//	// First, convert our ID3D11Device1 into an IDXGIDevice1
-//	ComPtr<IDXGIDevice1> dxgiDevice;
-//	dev.As(&dxgiDevice);
-//
-//	// Second, use the IDXGIDevice1 interface to get access to the adapter
-//	ComPtr<IDXGIAdapter> dxgiAdapter;
-//	dxgiDevice->GetAdapter(&dxgiAdapter);
-//
-//	// Third, use the IDXGIAdapter interface to get access to the factory
-//	ComPtr<IDXGIFactory2> dxgiFactory;
-//	dxgiAdapter->GetParent(__uuidof(IDXGIFactory2), &dxgiFactory);
-//
-//	/*
-//	 * Swap chain
-//	 */
-//	// set up the swap chain description
-//	DXGI_SWAP_CHAIN_DESC1 scd = {0};
-//	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;    // how the swap chain should be used
-//	scd.BufferCount = 2;                                  // a front buffer and a back buffer
-//	scd.Format = DXGI_FORMAT_B8G8R8A8_UNORM;              // the most common swap chain format
-//	scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;    // the recommended flip mode
-//	scd.SampleDesc.Count = 1;                             // disable anti-aliasing
-//
-//	// swapchain creation
-//	CoreWindow^ Window = CoreWindow::GetForCurrentThread();    // get the window pointer
-//
-//	dxgiFactory->CreateSwapChainForCoreWindow(
-//		dev.Get(),                                  // address of the device
-//		reinterpret_cast<IUnknown*>(Window),        // address of the window
-//		&scd,                                       // address of the swap chain description
-//		nullptr,                                    // advanced
-//		&swapchain                                // address of the new swap chain pointer
-//	);
-//
-//	/*
-//	 * set render target
-//	 */
-//	// get a pointer directly to the back buffer
-//	ComPtr<ID3D11Texture2D> backbuffer;
-//	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backbuffer);
-//
-//	// create a render target pointing to the back buffer
-//	dev->CreateRenderTargetView(backbuffer.Get(), nullptr, &rendertarget);
-//
-//	/*
-//	 * View port
-//	 */
-//	// set the viewport
-//	D3D11_VIEWPORT viewport = {0};
-//
-//	viewport.TopLeftX = 0;
-//	viewport.TopLeftY = 0;
-//	viewport.Width = Window->Bounds.Width;
-//	viewport.Height = Window->Bounds.Height;
-//
-//	devcon->RSSetViewports(1, &viewport);
-//
 //	/*
 //	 * Triangle
 //	 */
@@ -248,25 +504,9 @@ void D3D11AvdlApplication::Run()
 //	/*
 //	 * shaders
 //	 */
-//	Array<byte>^ VSFile = LoadShaderFile("VertexShader.cso");
-//	Array<byte>^ PSFile = LoadShaderFile("PixelShader.cso");
-//
-//	// create the shader objects
-//	dev->CreateVertexShader(VSFile->Data, VSFile->Length, nullptr, &vertexshader);
-//	dev->CreatePixelShader(PSFile->Data, PSFile->Length, nullptr, &pixelshader);
-//
 //	// set the shader objects as the active shaders
 //	devcon->VSSetShader(vertexshader.Get(), nullptr, 0);
 //	devcon->PSSetShader(pixelshader.Get(), nullptr, 0);
-//
-//	// initialize input layout
-//	D3D11_INPUT_ELEMENT_DESC ied[] =
-//	{
-//		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-//	};
-//
-//	// create and set the input layout
-//	dev->CreateInputLayout(ied, ARRAYSIZE(ied), VSFile->Data, VSFile->Length, &inputlayout);
 //	devcon->IASetInputLayout(inputlayout.Get());
 
 	float r = 0;
@@ -283,16 +523,90 @@ void D3D11AvdlApplication::Run()
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
 			// avdl update
+			// Convert degrees to radians, then convert seconds to rotation angle
+			float radiansPerSecond = XMConvertToRadians(45);
+			totalRotation += radiansPerSecond *0.1;
+			float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
+			XMStoreFloat4x4(&avdl_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
+			avdl_engine_update(&engine);
 
 			// avdl render
-			// game update
-			m_main->Update();
+			// Clear Color
+			XMVECTORF32 clearcolor = { dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 0.0f };
+			avdl_d3dContext->ClearRenderTargetView(avdl_d3dRenderTargetView.Get(), clearcolor);
 
-			// game render
-			if (m_main->Render())
-			{
-				m_deviceResources->Present();
-			}
+			// Reset render targets to the screen.
+			ID3D11RenderTargetView *const targets[1] = { avdl_d3dRenderTargetView.Get() };
+			avdl_d3dContext->OMSetRenderTargets(1, targets, 0);
+
+			// Prepare the constant buffer to send it to the graphics device.
+			avdl_d3dContext->UpdateSubresource1(
+				avdl_constantBuffer.Get(),
+				0,
+				NULL,
+				&avdl_constantBufferData,
+				0,
+				0,
+				0
+			);
+
+			// Each vertex is one instance of the VertexPositionColor struct.
+			UINT stride = sizeof(VertexPositionColor);
+			UINT offset = 0;
+			avdl_d3dContext->IASetVertexBuffers(
+				0,
+				1,
+				avdl_vertexBuffer.GetAddressOf(),
+				&stride,
+				&offset
+				);
+		
+			avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		
+			avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
+		
+			// Attach our vertex shader.
+			avdl_d3dContext->VSSetShader(
+				avdl_vertexShader.Get(),
+				nullptr,
+				0
+				);
+		
+			// Send the constant buffer to the graphics device.
+			avdl_d3dContext->VSSetConstantBuffers1(
+				0,
+				1,
+				avdl_constantBuffer.GetAddressOf(),
+				nullptr,
+				nullptr
+				);
+		
+			// Attach our pixel shader.
+			avdl_d3dContext->PSSetShader(
+				avdl_pixelShader.Get(),
+				nullptr,
+				0
+				);
+		
+			// Draw the objects.
+			avdl_d3dContext->Draw(
+				9,
+				0
+				);
+			avdl_engine_draw(&engine);
+
+			//m_deviceResources->Present();
+			// The first argument instructs DXGI to block until VSync, putting the application
+			// to sleep until the next VSync. This ensures we don't waste any cycles rendering
+			// frames that will never be displayed to the screen.
+			DXGI_PRESENT_PARAMETERS parameters = { 0 };
+			HRESULT hr = avdl_swapChain->Present1(1, 0, &parameters);
+
+			// Discard the contents of the render target.
+			// This is a valid operation only when the existing contents will be entirely
+			// overwritten. If dirty or scroll rects are used, this call should be removed.
+			avdl_d3dContext->DiscardView1(avdl_d3dRenderTargetView.Get(), nullptr, 0);
+
 			/*
 			// set our new render target object as the active render target
 			devcon->OMSetRenderTargets(1, rendertarget.GetAddressOf(), nullptr);
@@ -352,27 +666,10 @@ void D3D11AvdlApplication::OnActivated(CoreApplicationView^ applicationView, IAc
 
 void D3D11AvdlApplication::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 {
-	// Save app state asynchronously after requesting a deferral. Holding a deferral
-	// indicates that the application is busy performing suspending operations. Be
-	// aware that a deferral may not be held indefinitely. After about five seconds,
-	// the app will be forced to exit.
-	SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
-
-	create_task([this, deferral]()
-	{
-		// Insert your code here.
-
-		deferral->Complete();
-	});
 }
 
 void D3D11AvdlApplication::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 {
-	// Restore any data or state that was unloaded on suspend. By default, data
-	// and state are persisted when resuming from suspend. Note that this event
-	// does not occur if the app was previously terminated.
-
-	// Insert your code here.
 }
 
 void D3D11AvdlApplication::OnPointerPressed(CoreWindow^ window, PointerEventArgs^ args) {
@@ -416,12 +713,10 @@ void D3D11AvdlApplication::OnKeyUp(CoreWindow^ window, KeyEventArgs^ args) {
 
 void D3D11AvdlApplication::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
-	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
-	//m_windowVisible = args->Visible;
 }
 
 void D3D11AvdlApplication::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
@@ -433,16 +728,10 @@ void D3D11AvdlApplication::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArg
 
 void D3D11AvdlApplication::OnDpiChanged(DisplayInformation^ sender, Object^ args)
 {
-	// Note: The value for LogicalDpi retrieved here may not match the effective DPI of the app
-	// if it is being scaled for high resolution devices. Once the DPI is set on DeviceResources,
-	// you should always retrieve it using the GetDpi method.
-	// See DeviceResources.cpp for more details.
-	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
 {
-	m_main->CreateWindowSizeDependentResources();
 }
 
 void D3D11AvdlApplication::OnDisplayContentsInvalidated(DisplayInformation^ sender, Object^ args)
