@@ -305,20 +305,17 @@ void D3D11AvdlApplication::Run()
 		//Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
-		// avdl update
 		// Convert degrees to radians, then convert seconds to rotation angle
 		float radiansPerSecond = XMConvertToRadians(45);
 		totalRotation += radiansPerSecond *0.1;
 		float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
 		XMStoreFloat4x4(&avdl_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
+
+		// avdl update
 		avdl_engine_update(&engine);
 
 		// avdl render
 		avdl_engine_draw(&engine);
-
-		/*
-		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-		*/
 	}
 }
 
