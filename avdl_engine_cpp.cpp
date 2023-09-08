@@ -3,6 +3,34 @@
 #include <dd_string3d.h>
 
 #ifdef AVDL_DIRECT3D11
+#include "pch.h"
+using namespace concurrency;
+using namespace Windows::ApplicationModel;
+using namespace Windows::ApplicationModel::Core;
+using namespace Windows::ApplicationModel::Activation;
+using namespace Windows::UI::Core;
+using namespace Windows::UI::Input;
+using namespace Windows::UI::Popups;
+using namespace Windows::System;
+using namespace Windows::Foundation;
+using namespace Windows::Graphics::Display;
+
+using namespace Microsoft::WRL;
+using namespace Platform;
+using namespace DirectX;
+
+struct VertexPositionColor
+{
+	DirectX::XMFLOAT3 pos;
+	DirectX::XMFLOAT3 color;
+};
+
+struct ModelViewProjectionConstantBuffer
+{
+	DirectX::XMFLOAT4X4 model;
+	DirectX::XMFLOAT4X4 view;
+	DirectX::XMFLOAT4X4 projection;
+};
 /*
 #include <d3d11.h>
 #include <dxgi.h>
@@ -16,10 +44,21 @@
 
 #include <Windows.h>
 */
+// temp cube
+extern ComPtr<ID3D11Buffer> avdl_constantBuffer;
+extern ModelViewProjectionConstantBuffer avdl_constantBufferData;
+extern ComPtr<ID3D11VertexShader> avdl_vertexShader;
+extern ComPtr<ID3D11PixelShader> avdl_pixelShader;
+extern ComPtr<ID3D11InputLayout> avdl_inputLayout;
+extern ComPtr<ID3D11Buffer> avdl_vertexBuffer;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern ComPtr<IDXGISwapChain3> avdl_swapChain;
+extern ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
+extern ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
 
 extern int dd_flag_exit;
 
@@ -108,48 +147,82 @@ int avdl_engine_draw(struct avdl_engine *o) {
 
 	// render here with direct 3d
 	/*
-	float background_colour[4] = {
-		0x64 / 255.0f, 0x95 / 255.0f, 0xED / 255.0f, 1.0f
-	};
-	device_context_ptr->ClearRenderTargetView(
-		render_target_view_ptr, background_colour
-	);
-	*/
-	/*
 	avdl_graphics_ClearToColour();
+	*/
+	// Clear Color
+	//float color[4] = {r, 0.2f, 0.4f, 1.0f};
+	XMVECTORF32 clearcolor = { dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1.0f };
+	avdl_d3dContext->ClearRenderTargetView(avdl_d3dRenderTargetView.Get(), clearcolor);
 
-	RECT winRect;
-	GetClientRect(o->hwnd, &winRect);
-	D3D11_VIEWPORT viewport = {
-		0.0f,
-		0.0f,
-		(FLOAT)(winRect.right - winRect.left),
-		(FLOAT)(winRect.bottom - winRect.top),
-		0.0f,
-		1.0f
-	};
-	device_context_ptr->RSSetViewports(1, &viewport);
+	// Reset render targets to the screen.
+	ID3D11RenderTargetView *const targets[1] = { avdl_d3dRenderTargetView.Get() };
+	avdl_d3dContext->OMSetRenderTargets(1, targets, 0);
 
-	device_context_ptr->OMSetRenderTargets(1, &render_target_view_ptr, NULL);
-
-	device_context_ptr->IASetPrimitiveTopology(
-		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	// Prepare the constant buffer to send it to the graphics device.
+	avdl_d3dContext->UpdateSubresource1(
+		avdl_constantBuffer.Get(),
+		0,
+		NULL,
+		&avdl_constantBufferData,
+		0,
+		0,
+		0
 	);
-	device_context_ptr->IASetInputLayout(input_layout_ptr);
-	device_context_ptr->IASetVertexBuffers(
+
+	// Each vertex is one instance of the VertexPositionColor struct.
+	UINT stride = sizeof(VertexPositionColor);
+	UINT offset = 0;
+	avdl_d3dContext->IASetVertexBuffers(
 		0,
 		1,
-		&vertex_buffer_ptr,
-		&vertex_stride,
-		&vertex_offset
+		avdl_vertexBuffer.GetAddressOf(),
+		&stride,
+		&offset
 	);
 
-	device_context_ptr->VSSetShader(vertex_shader_ptr, NULL, 0);
-	device_context_ptr->PSSetShader(pixel_shader_ptr, NULL, 0);
+	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	device_context_ptr->Draw(vertex_count, 0);
-	swap_chain_ptr->Present(1, 0);
-	*/
+	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
+
+	// Attach our vertex shader.
+	avdl_d3dContext->VSSetShader(
+		avdl_vertexShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Send the constant buffer to the graphics device.
+	avdl_d3dContext->VSSetConstantBuffers1(
+		0,
+		1,
+		avdl_constantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+		);
+
+	// Attach our pixel shader.
+	avdl_d3dContext->PSSetShader(
+		avdl_pixelShader.Get(),
+		nullptr,
+		0
+		);
+	
+	// Draw cube
+	avdl_d3dContext->Draw(
+		9,
+		0
+	);
+
+	// The first argument instructs DXGI to block until VSync, putting the application
+	// to sleep until the next VSync. This ensures we don't waste any cycles rendering
+	// frames that will never be displayed to the screen.
+	DXGI_PRESENT_PARAMETERS parameters = { 0 };
+	HRESULT hr = avdl_swapChain->Present1(1, 0, &parameters);
+
+	// Discard the contents of the render target.
+	// This is a valid operation only when the existing contents will be entirely
+	// overwritten. If dirty or scroll rects are used, this call should be removed.
+	avdl_d3dContext->DiscardView1(avdl_d3dRenderTargetView.Get(), nullptr, 0);
 
 	return 0;
 

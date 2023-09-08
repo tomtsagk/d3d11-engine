@@ -38,8 +38,7 @@ struct VertexPositionColor
 // parts of `avdl_graphics`
 extern "C" ComPtr<ID3D11Device3> avdl_d3dDevice;
 extern "C" ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
-ComPtr<IDXGISwapChain3> avdl_swapChain;
-ComPtr<ID3D11RenderTargetView1>	avdl_d3dRenderTargetView;
+extern "C" ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
 
 // Constants used to calculate screen rotations
 namespace ScreenRotation
@@ -56,8 +55,6 @@ namespace ScreenRotation
 // mesh
 ComPtr<ID3D11Buffer> avdl_constantBuffer;
 ModelViewProjectionConstantBuffer avdl_constantBufferData;
-
-Size avdl_d3dRenderTargetSize;
 
 ComPtr<ID3D11Buffer> avdl_vertexBuffer;
 
@@ -184,91 +181,7 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 	DisplayInformation::DisplayContentsInvalidated +=
 		ref new TypedEventHandler<DisplayInformation^, Object^>(this, &D3D11AvdlApplication::OnDisplayContentsInvalidated);
 
-	// Clear the previous window size specific context.
-	ID3D11RenderTargetView* nullViews[] = {nullptr};
-	avdl_d3dContext->OMSetRenderTargets(ARRAYSIZE(nullViews), nullViews, nullptr);
-	avdl_d3dRenderTargetView = nullptr;
-	avdl_d3dContext->Flush1(D3D11_CONTEXT_TYPE_ALL, nullptr);
-
-	CoreWindow^ Window = CoreWindow::GetForCurrentThread();
-	avdl_d3dRenderTargetSize.Width = Window->Bounds.Width;
-	avdl_d3dRenderTargetSize.Height = Window->Bounds.Height;
-
-	if (avdl_swapChain != nullptr)
-	{
-		// If the swap chain already exists, resize it.
-		HRESULT hr = avdl_swapChain->ResizeBuffers(
-			2, // Double-buffered swap chain.
-			lround(avdl_d3dRenderTargetSize.Width),
-			lround(avdl_d3dRenderTargetSize.Height),
-			DXGI_FORMAT_B8G8R8A8_UNORM,
-			0
-		);
-	}
-	else
-	{
-		// Otherwise, create a new one using the same adapter as the existing Direct3D device.
-		DXGI_SCALING scaling = DXGI_SCALING_NONE;
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
-
-		swapChainDesc.Width = lround(avdl_d3dRenderTargetSize.Width);		// Match the size of the window.
-		swapChainDesc.Height = lround(avdl_d3dRenderTargetSize.Height);
-		swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;				// This is the most common swap chain format.
-		swapChainDesc.Stereo = false;
-		swapChainDesc.SampleDesc.Count = 1;								// Don't use multi-sampling.
-		swapChainDesc.SampleDesc.Quality = 0;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = 2;									// Use double-buffering to minimize latency.
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;	// All Microsoft Store apps must use this SwapEffect.
-		swapChainDesc.Flags = 0;
-		swapChainDesc.Scaling = scaling;
-		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-
-		// This sequence obtains the DXGI factory that was used to create the Direct3D device above.
-		ComPtr<IDXGIDevice3> dxgiDevice;
-		avdl_d3dDevice.As(&dxgiDevice);
-
-		ComPtr<IDXGIAdapter> dxgiAdapter;
-		dxgiDevice->GetAdapter(&dxgiAdapter);
-
-		ComPtr<IDXGIFactory4> dxgiFactory;
-		dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
-
-		ComPtr<IDXGISwapChain1> swapChain;
-		dxgiFactory->CreateSwapChainForCoreWindow(
-			avdl_d3dDevice.Get(),
-			reinterpret_cast<IUnknown*>(window),
-			&swapChainDesc,
-			nullptr,
-			&swapChain
-		);
-		swapChain.As(&avdl_swapChain);
-
-		// Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
-		// ensures that the application will only render after each VSync, minimizing power consumption.
-		dxgiDevice->SetMaximumFrameLatency(1);
-	}
-
-	// Create a render target view of the swap chain back buffer.
-	ComPtr<ID3D11Texture2D1> backBuffer;
-	avdl_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-
-	avdl_d3dDevice->CreateRenderTargetView1(
-		backBuffer.Get(),
-		nullptr,
-		&avdl_d3dRenderTargetView
-	);
-
-	// Set the 3D rendering viewport to target the entire window.
-	D3D11_VIEWPORT avdl_screenViewport = CD3D11_VIEWPORT(
-		0.0f,
-		0.0f,
-		Window->Bounds.Width,
-		Window->Bounds.Height
-		);
-
-	avdl_d3dContext->RSSetViewports(1, &avdl_screenViewport);
-
+	avdl_graphics_d3d11_SetWindow();
 }
 
 // Initializes scene resources, or loads a previously saved app state.
@@ -386,7 +299,6 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 // This method is called after the window becomes active.
 void D3D11AvdlApplication::Run()
 {
-
 	while (1)
 	{
 		// window events
@@ -402,81 +314,7 @@ void D3D11AvdlApplication::Run()
 		avdl_engine_update(&engine);
 
 		// avdl render
-		// Clear Color
-		//float color[4] = {r, 0.2f, 0.4f, 1.0f};
-		XMVECTORF32 clearcolor = { dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1.0f };
-		avdl_d3dContext->ClearRenderTargetView(avdl_d3dRenderTargetView.Get(), clearcolor);
-
-		// Reset render targets to the screen.
-		ID3D11RenderTargetView *const targets[1] = { avdl_d3dRenderTargetView.Get() };
-		avdl_d3dContext->OMSetRenderTargets(1, targets, 0);
-
-		// Prepare the constant buffer to send it to the graphics device.
-		avdl_d3dContext->UpdateSubresource1(
-			avdl_constantBuffer.Get(),
-			0,
-			NULL,
-			&avdl_constantBufferData,
-			0,
-			0,
-			0
-		);
-
-		// Each vertex is one instance of the VertexPositionColor struct.
-		UINT stride = sizeof(VertexPositionColor);
-		UINT offset = 0;
-		avdl_d3dContext->IASetVertexBuffers(
-			0,
-			1,
-			avdl_vertexBuffer.GetAddressOf(),
-			&stride,
-			&offset
-			);
-	
-		avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
-		avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
-	
-		// Attach our vertex shader.
-		avdl_d3dContext->VSSetShader(
-			avdl_vertexShader.Get(),
-			nullptr,
-			0
-			);
-	
-		// Send the constant buffer to the graphics device.
-		avdl_d3dContext->VSSetConstantBuffers1(
-			0,
-			1,
-			avdl_constantBuffer.GetAddressOf(),
-			nullptr,
-			nullptr
-			);
-	
-		// Attach our pixel shader.
-		avdl_d3dContext->PSSetShader(
-			avdl_pixelShader.Get(),
-			nullptr,
-			0
-			);
-	
-		// Draw the objects.
-		avdl_d3dContext->Draw(
-			9,
-			0
-			);
 		avdl_engine_draw(&engine);
-
-		// The first argument instructs DXGI to block until VSync, putting the application
-		// to sleep until the next VSync. This ensures we don't waste any cycles rendering
-		// frames that will never be displayed to the screen.
-		DXGI_PRESENT_PARAMETERS parameters = { 0 };
-		HRESULT hr = avdl_swapChain->Present1(1, 0, &parameters);
-
-		// Discard the contents of the render target.
-		// This is a valid operation only when the existing contents will be entirely
-		// overwritten. If dirty or scroll rects are used, this call should be removed.
-		avdl_d3dContext->DiscardView1(avdl_d3dRenderTargetView.Get(), nullptr, 0);
 
 		/*
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);

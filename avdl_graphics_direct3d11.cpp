@@ -73,6 +73,9 @@ int avdl_graphics_getContextId() {
 
 ComPtr<ID3D11Device3> avdl_d3dDevice;
 ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
+ComPtr<IDXGISwapChain3> avdl_swapChain;
+ComPtr<ID3D11RenderTargetView1>	avdl_d3dRenderTargetView;
+Size avdl_d3dRenderTargetSize;
 
 int avdl_graphics_Init() {
 
@@ -247,6 +250,94 @@ int avdl_graphics_generateContext() {
 //	glUseProgram(defaultProgram);
 //	currentProgram = defaultProgram;
 	return 0;
+}
+
+void avdl_graphics_d3d11_SetWindow() {
+	CoreWindow^ window = CoreWindow::GetForCurrentThread();
+	// Clear the previous window size specific context.
+	ID3D11RenderTargetView* nullViews[] = {nullptr};
+	avdl_d3dContext->OMSetRenderTargets(ARRAYSIZE(nullViews), nullViews, nullptr);
+	avdl_d3dRenderTargetView = nullptr;
+	avdl_d3dContext->Flush1(D3D11_CONTEXT_TYPE_ALL, nullptr);
+
+	CoreWindow^ Window = CoreWindow::GetForCurrentThread();
+	avdl_d3dRenderTargetSize.Width = Window->Bounds.Width;
+	avdl_d3dRenderTargetSize.Height = Window->Bounds.Height;
+
+	if (avdl_swapChain != nullptr)
+	{
+		// If the swap chain already exists, resize it.
+		HRESULT hr = avdl_swapChain->ResizeBuffers(
+			2, // Double-buffered swap chain.
+			lround(avdl_d3dRenderTargetSize.Width),
+			lround(avdl_d3dRenderTargetSize.Height),
+			DXGI_FORMAT_B8G8R8A8_UNORM,
+			0
+		);
+	}
+	else
+	{
+		// Otherwise, create a new one using the same adapter as the existing Direct3D device.
+		DXGI_SCALING scaling = DXGI_SCALING_NONE;
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
+
+		swapChainDesc.Width = lround(avdl_d3dRenderTargetSize.Width);		// Match the size of the window.
+		swapChainDesc.Height = lround(avdl_d3dRenderTargetSize.Height);
+		swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;				// This is the most common swap chain format.
+		swapChainDesc.Stereo = false;
+		swapChainDesc.SampleDesc.Count = 1;								// Don't use multi-sampling.
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = 2;									// Use double-buffering to minimize latency.
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;	// All Microsoft Store apps must use this SwapEffect.
+		swapChainDesc.Flags = 0;
+		swapChainDesc.Scaling = scaling;
+		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+
+		// This sequence obtains the DXGI factory that was used to create the Direct3D device above.
+		ComPtr<IDXGIDevice3> dxgiDevice;
+		avdl_d3dDevice.As(&dxgiDevice);
+
+		ComPtr<IDXGIAdapter> dxgiAdapter;
+		dxgiDevice->GetAdapter(&dxgiAdapter);
+
+		ComPtr<IDXGIFactory4> dxgiFactory;
+		dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
+
+		ComPtr<IDXGISwapChain1> swapChain;
+		dxgiFactory->CreateSwapChainForCoreWindow(
+			avdl_d3dDevice.Get(),
+			reinterpret_cast<IUnknown*>(window),
+			&swapChainDesc,
+			nullptr,
+			&swapChain
+		);
+		swapChain.As(&avdl_swapChain);
+
+		// Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
+		// ensures that the application will only render after each VSync, minimizing power consumption.
+		dxgiDevice->SetMaximumFrameLatency(1);
+	}
+
+	// Create a render target view of the swap chain back buffer.
+	ComPtr<ID3D11Texture2D1> backBuffer;
+	avdl_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
+
+	avdl_d3dDevice->CreateRenderTargetView1(
+		backBuffer.Get(),
+		nullptr,
+		&avdl_d3dRenderTargetView
+	);
+
+	// Set the 3D rendering viewport to target the entire window.
+	D3D11_VIEWPORT avdl_screenViewport = CD3D11_VIEWPORT(
+		0.0f,
+		0.0f,
+		Window->Bounds.Width,
+		Window->Bounds.Height
+		);
+
+	avdl_d3dContext->RSSetViewports(1, &avdl_screenViewport);
 }
 
 #ifdef __cplusplus

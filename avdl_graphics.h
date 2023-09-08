@@ -97,6 +97,10 @@ void avdl_graphics_VertexAttribPointer(int p, int size, int format, int, int, vo
 
 void avdl_graphics_DrawArrays(int vcount);
 
+#if AVDL_DIRECT3D11
+void avdl_graphics_d3d11_SetWindow();
+#endif
+
 #ifdef __cplusplus
 }
 #endif
