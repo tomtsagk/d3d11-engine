@@ -1,6 +1,7 @@
 #include "avdl_graphics.h"
 
 #ifdef AVDL_DIRECT3D11
+#include "pch.h"
 /*
 #include <d3d11.h>
 #include <dxgi.h>
@@ -15,6 +16,20 @@
 #include "dd_log.h"
 #include <stdlib.h>
 */
+using namespace concurrency;
+using namespace Windows::ApplicationModel;
+using namespace Windows::ApplicationModel::Core;
+using namespace Windows::ApplicationModel::Activation;
+using namespace Windows::UI::Core;
+using namespace Windows::UI::Input;
+using namespace Windows::UI::Popups;
+using namespace Windows::System;
+using namespace Windows::Foundation;
+using namespace Windows::Graphics::Display;
+
+using namespace Microsoft::WRL;
+using namespace Platform;
+using namespace DirectX;
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,27 +71,43 @@ int avdl_graphics_getContextId() {
 	return openglContextId;
 }
 
-/*
-// shaders
-GLuint defaultProgram;
-GLuint fontProgram;
-GLuint currentProgram;
-*/
+ComPtr<ID3D11Device3> avdl_d3dDevice;
+ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 
 int avdl_graphics_Init() {
 
 	/*
-	#if DD_PLATFORM_NATIVE
-	// init glew
-	GLenum glewError = glewInit();
-	if (glewError != GLEW_OK) {
-		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
-		return -1;
-	}
-	#endif
+	 * Create d3d11 device
+	 */
 
+	// This flag adds support for surfaces with a different color channel ordering
+	// than the API default. It is required for compatibility with Direct2D.
+	UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+	// Create the Direct3D 11 API device object and a corresponding context.
+	ComPtr<ID3D11Device> device;
+	ComPtr<ID3D11DeviceContext> context;
+
+	// Create the device and device context objects
+	HRESULT hr = D3D11CreateDevice(
+		nullptr, // adapter
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr, // software
+		creationFlags, // flags
+		nullptr, // feature levels
+		0, // feature levels count
+		D3D11_SDK_VERSION,
+		&device, // device
+		nullptr, // feature level variable
+		&context // device context
+	);
+
+	// Store pointers to the Direct3D 11.3 API device and immediate context.
+	device.As(&avdl_d3dDevice);
+	context.As(&avdl_d3dContext);
+
+	/*
 	avdl_graphics_generateContext();
-
 	*/
 	return 0;
 
