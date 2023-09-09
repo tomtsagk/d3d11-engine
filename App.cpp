@@ -3,7 +3,8 @@
 
 #include <ppltasks.h>
 #include "..\avdl_engine.h"
-#include <dd_game.h>
+#include "dd_game.h"
+#include "dd_matrix.h"
 
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
@@ -39,18 +40,6 @@ struct VertexPositionColor
 extern "C" ComPtr<ID3D11Device3> avdl_d3dDevice;
 extern "C" ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 extern "C" ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
-
-// Constants used to calculate screen rotations
-namespace ScreenRotation
-{
-	// 0-degree Z-rotation
-	static const XMFLOAT4X4 Rotation0(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-		);
-};
 
 // mesh
 ComPtr<ID3D11Buffer> avdl_constantBuffer;
@@ -226,9 +215,9 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 	// Load mesh vertices. Each vertex has a position and a color.
 	static const VertexPositionColor cubeVertices[] = 
 	{
-		{XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
-		{XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
-		{XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
+		{XMFLOAT3( 0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
+		{XMFLOAT3(-0.5f, -0.5f,  0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
+		{XMFLOAT3( 0.0f,  0.5f,  0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
 
 		{XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
 		{XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
@@ -275,26 +264,29 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 		100.0f
 		);
 
-	XMFLOAT4X4 orientation = ScreenRotation::Rotation0;
-
-	XMMATRIX orientationMatrix = XMLoadFloat4x4(&orientation);
+	/*
+	 * potentially handle orientations ?
+	*/
+	struct dd_matrix orientation;
+	dd_matrix_identity(&orientation);
+	XMMATRIX orientationMatrix = XMLoadFloat4x4((DirectX::XMFLOAT4X4 *)orientation.cell);
 
 	XMStoreFloat4x4(
 		&avdl_constantBufferData.projection,
-		XMMatrixTranspose(perspectiveMatrix * orientationMatrix)
-		);
+		XMMatrixTranspose(perspectiveMatrix)
+	);
+//	XMStoreFloat4x4(
+//		&avdl_constantBufferData.projection,
+//		XMLoadFloat4x4((DirectX::XMFLOAT4X4 *)orientation.cell)
+//	);
 
-	// Eye is at (0,0.7,1.5), looking at point (0,-0.1,0) with the up-vector along the y-axis.
-	static const XMVECTORF32 eye = { 0.0f, 0.7f, 1.5f, 0.0f };
-	static const XMVECTORF32 at = { 0.0f, -0.1f, 0.0f, 0.0f };
-	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
-
-	XMStoreFloat4x4(&avdl_constantBufferData.view, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
-	//avdl_log2("scene renderer create window size dependent resources");
+	XMStoreFloat4x4(&avdl_constantBufferData.view, XMLoadFloat4x4((DirectX::XMFLOAT4X4 *) orientation.cell));
 
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 	avdl_engine_setPaused(&engine, false);
 }
+
+extern struct dd_matrix matPerspective;
 
 // This method is called after the window becomes active.
 void D3D11AvdlApplication::Run()
@@ -306,10 +298,18 @@ void D3D11AvdlApplication::Run()
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
 		// Convert degrees to radians, then convert seconds to rotation angle
-		float radiansPerSecond = XMConvertToRadians(45);
-		totalRotation += radiansPerSecond *0.1;
+		struct dd_matrix m;
+		dd_matrix_identity(&m);
+		//dd_matrix_copy(&m, &matPerspective);
+
+		float radiansPerSecond = 1;
+		totalRotation += radiansPerSecond *0.001;
 		float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
-		XMStoreFloat4x4(&avdl_constantBufferData.model, XMMatrixTranspose(XMMatrixRotationY(radians)));
+		dd_matrix_translate(&m, 0, 0, -5);
+		dd_matrix_rotate(&m, totalRotation *1000, 0, 1, 0);
+
+		XMMATRIX d3d11Mat = XMLoadFloat4x4((DirectX::XMFLOAT4X4 *)m.cell);
+		XMStoreFloat4x4(&avdl_constantBufferData.model, d3d11Mat);
 
 		// avdl update
 		avdl_engine_update(&engine);

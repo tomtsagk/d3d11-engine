@@ -19,6 +19,8 @@ using namespace Microsoft::WRL;
 using namespace Platform;
 using namespace DirectX;
 
+struct dd_matrix matPerspective;
+
 struct VertexPositionColor
 {
 	DirectX::XMFLOAT3 pos;
@@ -146,14 +148,22 @@ int avdl_engine_init(struct avdl_engine *o) {
 int avdl_engine_draw(struct avdl_engine *o) {
 
 	// render here with direct 3d
-	/*
-	avdl_graphics_ClearToColour();
-	*/
-	// Clear Color
-	//float color[4] = {r, 0.2f, 0.4f, 1.0f};
-	XMVECTORF32 clearcolor = { dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1.0f };
-	avdl_d3dContext->ClearRenderTargetView(avdl_d3dRenderTargetView.Get(), clearcolor);
 
+	// clear previous frame
+	avdl_graphics_ClearToColour();
+	avdl_graphics_ClearColourAndDepth();
+
+	// reset view
+	dd_matrix_globalInit();
+
+	// draw world
+	if (o->cworld && o->cworld->draw) {
+		o->cworld->draw(o->cworld);
+	}
+
+	/*
+	 * ??
+	 */
 	// Reset render targets to the screen.
 	ID3D11RenderTargetView *const targets[1] = { avdl_d3dRenderTargetView.Get() };
 	avdl_d3dContext->OMSetRenderTargets(1, targets, 0);

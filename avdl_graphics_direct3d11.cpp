@@ -1,5 +1,7 @@
 #include "avdl_graphics.h"
 
+#include "avdl_cengine.h"
+
 #ifdef AVDL_DIRECT3D11
 #include "pch.h"
 /*
@@ -35,6 +37,10 @@ using namespace DirectX;
 extern "C" {
 #endif
 
+extern ComPtr<ID3D11Device3> avdl_d3dDevice;
+extern ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
+extern ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
+
 /*
 extern ID3D11DeviceContext* device_context_ptr;
 extern ID3D11RenderTargetView* render_target_view_ptr;
@@ -45,15 +51,8 @@ void avdl_graphics_ClearDepth() {
 }
 
 void avdl_graphics_ClearToColour() {
-	/*
-	float background_colour[4] = {
-		dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1.0f
-	};
-	device_context_ptr->ClearRenderTargetView(
-		render_target_view_ptr, background_colour
-	);
-	//glClearColor(dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1);
-	*/
+	XMVECTORF32 clearcolor = { dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1.0f };
+	avdl_d3dContext->ClearRenderTargetView(avdl_d3dRenderTargetView.Get(), clearcolor);
 }
 
 void avdl_graphics_ClearColourAndDepth() {

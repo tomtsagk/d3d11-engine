@@ -51,9 +51,18 @@ void dd_matrix_translatea(struct dd_matrix *m, float x, float y, float z) {
 
 /* Translate - Set */
 void dd_matrix_translates(struct dd_matrix *m, float x, float y, float z) {
+	#if defined( AVDL_DIRECT3D11 )
+	m->cell[3] = x;
+	m->cell[7] = y;
+	m->cell[11] = z;
+	//m->cell[12] = x;
+	//m->cell[13] = y;
+	//m->cell[14] = z;
+	#else
 	m->cell[12] = x;
 	m->cell[13] = y;
 	m->cell[14] = z;
+	#endif
 }
 
 /* Translate - Multiply */
@@ -187,11 +196,19 @@ void dd_matrix_mult(struct dd_matrix *m1, struct dd_matrix *m2) {
 	struct dd_matrix new_mat;
 	int x;
 	for (x = 0; x < 16; x++) {
+		#if defined( AVDL_DIRECT3D11 )
+		new_mat.cell[x] =
+			(m2->cell[(x%4)+ 0] *m1->cell[(x/4)*4+0]) +
+			(m2->cell[(x%4)+ 4] *m1->cell[(x/4)*4+1]) +
+			(m2->cell[(x%4)+ 8] *m1->cell[(x/4)*4+2]) +
+			(m2->cell[(x%4)+12] *m1->cell[(x/4)*4+3]);
+		#else
 		new_mat.cell[x] =
 			(m1->cell[(x%4)+ 0] *m2->cell[(x/4)*4+0]) +
 			(m1->cell[(x%4)+ 4] *m2->cell[(x/4)*4+1]) +
 			(m1->cell[(x%4)+ 8] *m2->cell[(x/4)*4+2]) +
 			(m1->cell[(x%4)+12] *m2->cell[(x/4)*4+3]);
+		#endif
 	}
 
 	for (x = 0; x < 16; x++) {
