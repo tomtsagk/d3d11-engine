@@ -19,8 +19,6 @@ using namespace Microsoft::WRL;
 using namespace Platform;
 using namespace DirectX;
 
-struct dd_matrix matPerspective;
-
 struct VertexPositionColor
 {
 	DirectX::XMFLOAT3 pos;

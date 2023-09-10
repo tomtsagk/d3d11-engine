@@ -173,6 +173,8 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 	avdl_graphics_d3d11_SetWindow();
 }
 
+extern "C" struct dd_matrix matPerspective;
+
 // Initializes scene resources, or loads a previously saved app state.
 void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 {
@@ -256,6 +258,7 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 	// made to the swap chain render target. For draw calls to other targets,
 	// this transform should not be applied.
 
+	/*
 	// This sample makes use of a right-handed coordinate system using row-major matrices.
 	XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovRH(
 		fovAngleY,
@@ -263,30 +266,27 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 		0.01f,
 		100.0f
 		);
+		*/
 
 	/*
-	 * potentially handle orientations ?
-	*/
+	 * for now set the projection and view matrices as identity
+	 */
 	struct dd_matrix orientation;
 	dd_matrix_identity(&orientation);
-	XMMATRIX orientationMatrix = XMLoadFloat4x4((DirectX::XMFLOAT4X4 *)orientation.cell);
+	XMMATRIX identityMatrix(
+		orientation.cell
+	);
 
 	XMStoreFloat4x4(
 		&avdl_constantBufferData.projection,
-		XMMatrixTranspose(perspectiveMatrix)
+		XMMatrixTranspose(identityMatrix)
 	);
-//	XMStoreFloat4x4(
-//		&avdl_constantBufferData.projection,
-//		XMLoadFloat4x4((DirectX::XMFLOAT4X4 *)orientation.cell)
-//	);
 
-	XMStoreFloat4x4(&avdl_constantBufferData.view, XMLoadFloat4x4((DirectX::XMFLOAT4X4 *) orientation.cell));
+	XMStoreFloat4x4(&avdl_constantBufferData.view, identityMatrix);
 
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 	avdl_engine_setPaused(&engine, false);
 }
-
-extern struct dd_matrix matPerspective;
 
 // This method is called after the window becomes active.
 void D3D11AvdlApplication::Run()
@@ -297,10 +297,14 @@ void D3D11AvdlApplication::Run()
 		//Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
+		// global matrix
+		XMMATRIX orientationMatrix2(
+			matPerspective.cell
+		);
+
 		// Convert degrees to radians, then convert seconds to rotation angle
 		struct dd_matrix m;
 		dd_matrix_identity(&m);
-		//dd_matrix_copy(&m, &matPerspective);
 
 		float radiansPerSecond = 1;
 		totalRotation += radiansPerSecond *0.001;
@@ -308,8 +312,10 @@ void D3D11AvdlApplication::Run()
 		dd_matrix_translate(&m, 0, 0, -5);
 		dd_matrix_rotate(&m, totalRotation *1000, 0, 1, 0);
 
-		XMMATRIX d3d11Mat = XMLoadFloat4x4((DirectX::XMFLOAT4X4 *)m.cell);
-		XMStoreFloat4x4(&avdl_constantBufferData.model, d3d11Mat);
+		XMMATRIX d3d11Mat(m.cell);
+		orientationMatrix2 = XMMatrixTranspose(orientationMatrix2);
+		orientationMatrix2 *= d3d11Mat;
+		XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
 
 		// avdl update
 		avdl_engine_update(&engine);
