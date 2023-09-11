@@ -252,36 +252,6 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 		fovAngleY *= 2.0f;
 	}
 
-	// Note that the OrientationTransform3D matrix is post-multiplied here
-	// in order to correctly orient the scene to match the display orientation.
-	// This post-multiplication step is required for any draw calls that are
-	// made to the swap chain render target. For draw calls to other targets,
-	// this transform should not be applied.
-
-	/*
-	// This sample makes use of a right-handed coordinate system using row-major matrices.
-	XMMATRIX perspectiveMatrix = XMMatrixPerspectiveFovRH(
-		fovAngleY,
-		aspectRatio,
-		0.01f,
-		100.0f
-		);
-		*/
-
-	/*
-	 * for now set the projection and view matrices as identity
-	 */
-	/*
-	struct dd_matrix orientation;
-	dd_matrix_identity(&orientation);
-	XMMATRIX identityMatrix(
-		orientation.cell
-	);
-
-	XMStoreFloat4x4(&avdl_constantBufferData.projection, identityMatrix);
-	XMStoreFloat4x4(&avdl_constantBufferData.view, identityMatrix);
-	*/
-
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 	avdl_engine_setPaused(&engine, false);
 }
@@ -294,28 +264,6 @@ void D3D11AvdlApplication::Run()
 		// window events
 		//Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-
-		/*
-		// global matrix
-		XMMATRIX orientationMatrix2(
-			matPerspective.cell
-		);
-
-		// Convert degrees to radians, then convert seconds to rotation angle
-		struct dd_matrix m;
-		dd_matrix_identity(&m);
-
-		float radiansPerSecond = 1;
-		totalRotation += radiansPerSecond *0.001;
-		float radians = static_cast<float>(fmod(totalRotation, XM_2PI));
-		dd_matrix_translate(&m, 0, 0, -5);
-		dd_matrix_rotate(&m, totalRotation *1000, 0, 1, 0);
-
-		XMMATRIX d3d11Mat(m.cell);
-		//orientationMatrix2 = XMMatrixTranspose(orientationMatrix2);
-		orientationMatrix2 *= d3d11Mat;
-		XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
-		*/
 
 		// avdl update
 		avdl_engine_update(&engine);
