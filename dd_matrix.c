@@ -55,9 +55,6 @@ void dd_matrix_translates(struct dd_matrix *m, float x, float y, float z) {
 	m->cell[3] = x;
 	m->cell[7] = y;
 	m->cell[11] = z;
-	//m->cell[12] = x;
-	//m->cell[13] = y;
-	//m->cell[14] = z;
 	#else
 	m->cell[12] = x;
 	m->cell[13] = y;

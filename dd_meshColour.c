@@ -12,6 +12,8 @@
 #ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#else
+extern void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *);
 #endif
 
 // constructor
@@ -74,7 +76,9 @@ void dd_meshColour_clean(struct dd_meshColour *m) {
 /* draw the mesh itself */
 void dd_meshColour_draw(struct dd_meshColour *m) {
 
-	#ifndef AVDL_DIRECT3D11
+	#ifdef AVDL_DIRECT3D11
+	avdl_graphics_direct3d11_drawMesh(dd_matrix_globalGet());
+	#else
 	avdl_graphics_EnableVertexAttribArray(0);
 	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->parent.v);
 

@@ -12,6 +12,8 @@
 #ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#else
+extern void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *);
 #endif
 
 void dd_meshTexture_create(struct dd_meshTexture *m) {
@@ -82,7 +84,9 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
-	#ifndef AVDL_DIRECT3D11
+	#ifdef AVDL_DIRECT3D11
+	avdl_graphics_direct3d11_drawMesh(dd_matrix_globalGet());
+	#else
 	if (m->hasTransparency) {
 		avdl_graphics_EnableBlend();
 	}

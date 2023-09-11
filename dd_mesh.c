@@ -11,6 +11,8 @@
 #ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#else
+extern void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *);
 #endif
 
 float shape_triangle[] = {
@@ -109,7 +111,9 @@ void dd_mesh_clean(struct dd_mesh *m) {
  */
 void dd_mesh_draw(struct dd_mesh *m) {
 
-	#ifndef AVDL_DIRECT3D11
+	#ifdef AVDL_DIRECT3D11
+	avdl_graphics_direct3d11_drawMesh(dd_matrix_globalGet());
+	#else
 	avdl_graphics_EnableVertexAttribArray(0);
 	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->v);
 

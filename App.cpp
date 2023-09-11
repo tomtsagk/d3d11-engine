@@ -21,12 +21,12 @@ using namespace Microsoft::WRL;
 using namespace Platform;
 using namespace DirectX;
 
+extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix);
+
 // Constant buffer used to send MVP matrices to the vertex shader.
 struct ModelViewProjectionConstantBuffer
 {
 	DirectX::XMFLOAT4X4 model;
-	DirectX::XMFLOAT4X4 view;
-	DirectX::XMFLOAT4X4 projection;
 };
 
 // Used to send per-vertex data to the vertex shader.
@@ -271,18 +271,16 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 	/*
 	 * for now set the projection and view matrices as identity
 	 */
+	/*
 	struct dd_matrix orientation;
 	dd_matrix_identity(&orientation);
 	XMMATRIX identityMatrix(
 		orientation.cell
 	);
 
-	XMStoreFloat4x4(
-		&avdl_constantBufferData.projection,
-		XMMatrixTranspose(identityMatrix)
-	);
-
+	XMStoreFloat4x4(&avdl_constantBufferData.projection, identityMatrix);
 	XMStoreFloat4x4(&avdl_constantBufferData.view, identityMatrix);
+	*/
 
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 	avdl_engine_setPaused(&engine, false);
@@ -297,6 +295,7 @@ void D3D11AvdlApplication::Run()
 		//Window->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
+		/*
 		// global matrix
 		XMMATRIX orientationMatrix2(
 			matPerspective.cell
@@ -313,9 +312,10 @@ void D3D11AvdlApplication::Run()
 		dd_matrix_rotate(&m, totalRotation *1000, 0, 1, 0);
 
 		XMMATRIX d3d11Mat(m.cell);
-		orientationMatrix2 = XMMatrixTranspose(orientationMatrix2);
+		//orientationMatrix2 = XMMatrixTranspose(orientationMatrix2);
 		orientationMatrix2 *= d3d11Mat;
 		XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
+		*/
 
 		// avdl update
 		avdl_engine_update(&engine);
@@ -424,4 +424,68 @@ void D3D11AvdlApplication::OnOrientationChanged(DisplayInformation^ sender, Obje
 
 void D3D11AvdlApplication::OnDisplayContentsInvalidated(DisplayInformation^ sender, Object^ args)
 {
+}
+
+extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix) {
+	XMMATRIX orientationMatrix2(
+		matrix->cell
+	);
+	XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
+
+	// Prepare the constant buffer to send it to the graphics device.
+	avdl_d3dContext->UpdateSubresource1(
+		avdl_constantBuffer.Get(),
+		0,
+		NULL,
+		&avdl_constantBufferData,
+		//&orientationMatrix2,
+		//matrix->cell,
+		0,
+		0,
+		0
+	);
+
+	// Each vertex is one instance of the VertexPositionColor struct.
+	UINT stride = sizeof(VertexPositionColor);
+	UINT offset = 0;
+	avdl_d3dContext->IASetVertexBuffers(
+		0,
+		1,
+		avdl_vertexBuffer.GetAddressOf(),
+		&stride,
+		&offset
+	);
+
+	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
+
+	// Attach our vertex shader.
+	avdl_d3dContext->VSSetShader(
+		avdl_vertexShader.Get(),
+		nullptr,
+		0
+	);
+
+	// Send the constant buffer to the graphics device.
+	avdl_d3dContext->VSSetConstantBuffers1(
+		0,
+		1,
+		avdl_constantBuffer.GetAddressOf(),
+		nullptr,
+		nullptr
+		);
+
+	// Attach our pixel shader.
+	avdl_d3dContext->PSSetShader(
+		avdl_pixelShader.Get(),
+		nullptr,
+		0
+		);
+
+	// Draw cube
+	avdl_d3dContext->Draw(
+		9,
+		0
+	);
 }

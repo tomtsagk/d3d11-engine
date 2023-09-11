@@ -143,6 +143,9 @@ int avdl_engine_init(struct avdl_engine *o) {
 	return 0;
 }
 
+extern "C" struct dd_matrix matPerspective;
+extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix);
+
 int avdl_engine_draw(struct avdl_engine *o) {
 
 	// render here with direct 3d
@@ -154,6 +157,10 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	// reset view
 	dd_matrix_globalInit();
 
+	// Reset render targets to the screen.
+	ID3D11RenderTargetView *const targets[1] = { avdl_d3dRenderTargetView.Get() };
+	avdl_d3dContext->OMSetRenderTargets(1, targets, 0);
+
 	// draw world
 	if (o->cworld && o->cworld->draw) {
 		o->cworld->draw(o->cworld);
@@ -162,10 +169,6 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	/*
 	 * ??
 	 */
-	// Reset render targets to the screen.
-	ID3D11RenderTargetView *const targets[1] = { avdl_d3dRenderTargetView.Get() };
-	avdl_d3dContext->OMSetRenderTargets(1, targets, 0);
-
 	// Prepare the constant buffer to send it to the graphics device.
 	avdl_d3dContext->UpdateSubresource1(
 		avdl_constantBuffer.Get(),
