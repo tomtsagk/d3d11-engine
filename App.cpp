@@ -170,6 +170,10 @@ void D3D11AvdlApplication::SetWindow(CoreWindow^ window)
 	DisplayInformation::DisplayContentsInvalidated +=
 		ref new TypedEventHandler<DisplayInformation^, Object^>(this, &D3D11AvdlApplication::OnDisplayContentsInvalidated);
 
+	dd_width = window->Bounds.Width;
+	dd_height = window->Bounds.Height;
+	avdl_engine_resize(&engine, dd_width, dd_height);
+
 	avdl_graphics_d3d11_SetWindow();
 }
 
@@ -337,8 +341,12 @@ void D3D11AvdlApplication::OnKeyUp(CoreWindow^ window, KeyEventArgs^ args) {
 
 void D3D11AvdlApplication::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
-	/*
+	avdl_graphics_d3d11_SetWindow();
 	CoreWindow^ Window = CoreWindow::GetForCurrentThread();
+	dd_width = Window->Bounds.Width;
+	dd_height = Window->Bounds.Height;
+	avdl_engine_resize(&engine, dd_width, dd_height);
+	/*
 	// Set the 3D rendering viewport to target the entire window.
 	D3D11_VIEWPORT avdl_screenViewport = CD3D11_VIEWPORT(
 		0.0f,

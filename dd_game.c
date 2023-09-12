@@ -12,7 +12,7 @@ int dd_flag_focused = 0;
 int dd_flag_updateThread = 0;
 int dd_flag_exit = 0;
 
-#if DD_PLATFORM_ANDROID
+#if DD_PLATFORM_ANDROID || defined( AVDL_DIRECT3D11 )
 int dd_width = 0;
 int dd_height = 0;
 #else
@@ -35,25 +35,17 @@ void dd_gameInitDefault() {
 	dd_gameInitWindowHeight = 480;
 }
 
-#if DD_PLATFORM_NATIVE || defined(AVDL_DIRECT3D11)
+#if DD_PLATFORM_NATIVE
 int dd_window_width() {
-	#ifdef AVDL_DIRECT3D11
-	return 100;
-	#else
 	int w, h;
 	SDL_GetWindowSize(engine.window, &w, &h);
 	return w;
-	#endif
 }
 
 int dd_window_height() {
-	#ifdef AVDL_DIRECT3D11
-	return 100;
-	#else
 	int w, h;
 	SDL_GetWindowSize(engine.window, &w, &h);
 	return h;
-	#endif
 }
 #endif
 
