@@ -87,7 +87,28 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	}
 	*/
 	#ifdef AVDL_DIRECT3D11
-	return;
+
+	struct dd_meshToLoad meshToLoad;
+	meshToLoad.object = object;
+	meshToLoad.meshType = meshType;
+	meshToLoad.type = type;
+	//#if defined(_WIN32) || defined(WIN32)
+	//strcpy(meshToLoad.filename, assetname);
+	strcpy_s(meshToLoad.filename, 300, assetname);
+	//dd_log("add asset: %s\n", meshToLoad.filename);
+	/*
+	#elif DD_PLATFORM_ANDROID
+	strcpy(meshToLoad.filename, assetname);
+	//dd_log("add android asset: %s\n", meshToLoad.filename);
+	#else
+	strcpy(meshToLoad.filename, avdl_getProjectLocation());
+	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
+	strcat(meshToLoad.filename, assetname);
+	//printf("add asset: %s\n", meshToLoad.filename);
+	//dd_log("add asset: %s\n", meshToLoad.filename);
+	#endif
+	*/
+	dd_da_add(&meshesToLoad, &meshToLoad);
 	#else
 
 	struct dd_meshToLoad meshToLoad;
@@ -356,13 +377,15 @@ void avdl_assetManager_loadAssets() {
 				struct dd_meshColour *mesh = m->object;
 				dd_meshColour_clean(mesh);
 				struct dd_loaded_mesh lm;
-				dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
-				mesh->parent.vcount = lm.vcount;
-				mesh->parent.v = lm.v;
-				mesh->parent.dirtyVertices = 1;
-				mesh->c = lm.c;
-				mesh->dirtyColours = 1;
+				if (dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY) == 0) {
+
+					mesh->parent.vcount = lm.vcount;
+					mesh->parent.v = lm.v;
+					mesh->parent.dirtyVertices = 1;
+					mesh->c = lm.c;
+					mesh->dirtyColours = 1;
+				}
 			}
 			else
 			// mesh texture

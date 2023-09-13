@@ -555,6 +555,66 @@
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\button.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\button_exit.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\button_play.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\button_options.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\button_plus.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\eye.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\particle.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\stage_2.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\ui_particle.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\ui_particle_start.ply">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ImageContentTask.targets" />

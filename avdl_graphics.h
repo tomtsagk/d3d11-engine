@@ -50,6 +50,9 @@ void avdl_graphics_ClearDepth();
 void avdl_graphics_ClearToColour();
 void avdl_graphics_ClearColourAndDepth();
 
+// abstract mesh
+typedef void avdl_graphics_mesh;
+
 // opengl id, used in case the context is lost and re-gained
 void avdl_graphics_generateContextId();
 int  avdl_graphics_getContextId();

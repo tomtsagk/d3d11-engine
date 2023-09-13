@@ -282,18 +282,20 @@ this->button[i].update(&this->button[i], (this->selection == i), (this->selectio
 };
 }
 void menu_home_draw(struct menu_home *this) {
-/*
 if ((this->animationOpen < 0.010000)) {
 return ;
 }
 ;
+/*
 this->buttonProgram.useProgram(&this->buttonProgram);
 int colLoc;
 ;
 colLoc = avdl_getUniformLocation(&this->buttonProgram, "tint");
+*/
 for (int i = 0;
 (i < this->buttonTotal);i = (i + 1)) {
 dd_matrix_push();
+	/*
 if ((this->button[i].idleCol > 1.000000)) {
 avdl_graphics_SetUniform3f(colLoc, dd_math_ease_linear((this->button[i].idleCol - 1.000000), this->buttonActiveCol[0], this->buttonClickCol[0]), dd_math_ease_linear((this->button[i].idleCol - 1.000000), this->buttonActiveCol[1], this->buttonClickCol[1]), dd_math_ease_linear((this->button[i].idleCol - 1.000000), this->buttonActiveCol[2], this->buttonClickCol[2]));
 }
@@ -302,6 +304,7 @@ else
 avdl_graphics_SetUniform3f(colLoc, dd_math_ease_linear(this->button[i].idleCol, this->buttonInactiveCol[0], this->buttonActiveCol[0]), dd_math_ease_linear(this->button[i].idleCol, this->buttonInactiveCol[1], this->buttonActiveCol[1]), dd_math_ease_linear(this->button[i].idleCol, this->buttonInactiveCol[2], this->buttonActiveCol[2]));
 }
 ;
+*/
 this->button[i].applyTransform(&this->button[i]);
 this->button[i].applyMatrixTransform(&this->button[i]);
 float anim;
@@ -318,7 +321,7 @@ dd_scalef(0.300000, 0.300000, 0.300000);
 this->button[i].drawText(&this->button[i]);
 dd_matrix_pop();
 };
-avdl_useProgram(0);
+//avdl_useProgram(0);
 if ((this->selection >= 0)) {
 dd_matrix_push();
 this->textButton.applyTransform(&this->textButton);
@@ -339,7 +342,6 @@ this->logoUI.applyTransform(&this->logoUI);
 this->logoUI.applyMatrixTransform(&this->logoUI);
 this->logo.parent.parent.draw(&this->logo.parent.parent);
 dd_matrix_pop();
-*/
 }
 int menu_home_key_input(struct menu_home *this, char key) {
 if (((key == 13) || (key == 32))) {

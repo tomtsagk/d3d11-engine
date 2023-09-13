@@ -85,7 +85,7 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
 	#ifdef AVDL_DIRECT3D11
-	avdl_graphics_direct3d11_drawMesh(dd_matrix_globalGet());
+	//avdl_graphics_direct3d11_drawMesh(dd_matrix_globalGet());
 	#else
 	if (m->hasTransparency) {
 		avdl_graphics_EnableBlend();

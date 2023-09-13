@@ -1,0 +1,11 @@
+{
+	"menu_play": "Spiele",
+	"menu_play_desc": "Starte das Spiel",
+	"menu_exit": "Ausgang",
+	"menu_exit_desc": "Das Spiel verlassen",
+	"menu_options": "Optionen",
+	"menu_options_desc": "Spieleinstellungen öffnen und ändern",
+	"menu_physical_game": "Eine Kopie auf Etsy holen",
+	"menu_physical_game_desc": "Kaufe Reue das physische Kartenspiel auf afloofdev.etsy.com",
+	"menu_loading": "Laden ..."
+}

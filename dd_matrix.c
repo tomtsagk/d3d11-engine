@@ -52,8 +52,8 @@ void dd_matrix_translatea(struct dd_matrix *m, float x, float y, float z) {
 /* Translate - Set */
 void dd_matrix_translates(struct dd_matrix *m, float x, float y, float z) {
 	#if defined( AVDL_DIRECT3D11 )
-	m->cell[3] = x;
-	m->cell[7] = y;
+	m->cell[ 3] = x;
+	m->cell[ 7] = y;
 	m->cell[11] = z;
 	#else
 	m->cell[12] = x;
@@ -170,6 +170,24 @@ void dd_matrix_rotatelocal_z(struct dd_matrix *m, float rad) {
 void dd_matrix_rotate(struct dd_matrix *m, float angle, float x, float y, float z) {
 	struct dd_matrix m2;
 	float angleRadians = 3.14/180.0 *(-angle);
+	#if defined( AVDL_DIRECT3D11 )
+	m2.cell[ 0] = pow(x, 2) *(1-cos(angleRadians))+cos(angleRadians);
+	m2.cell[ 1] = y*x*(1-cos(angleRadians))+z*sin(angleRadians);
+	m2.cell[ 2] = x*z*(1-cos(angleRadians))-y*sin(angleRadians);
+	m2.cell[ 3] = 0;
+	m2.cell[ 4] = x*y*(1-cos(angleRadians))-z*sin(angleRadians);
+	m2.cell[ 5] = pow(y, 2)*(1-cos(angleRadians))+cos(angleRadians);
+	m2.cell[ 6] = y*z*(1-cos(angleRadians))+x*sin(angleRadians);
+	m2.cell[ 7] = 0;
+	m2.cell[ 8] = x*z*(1-cos(angleRadians))+y*sin(angleRadians);
+	m2.cell[ 9] = y*z*(1-cos(angleRadians))-x*sin(angleRadians);
+	m2.cell[10] = pow(z, 2)*(1-cos(angleRadians))+cos(angleRadians);
+	m2.cell[11] = 0;
+	m2.cell[12] = 0;
+	m2.cell[13] = 0;
+	m2.cell[14] = 0;
+	m2.cell[15] = 1;
+	#else
 	m2.cell[ 0] = pow(x, 2) *(1-cos(angleRadians))+cos(angleRadians);
 	m2.cell[ 1] = x*y*(1-cos(angleRadians))-z*sin(angleRadians);
 	m2.cell[ 2] = x*z*(1-cos(angleRadians))+y*sin(angleRadians);
@@ -186,6 +204,7 @@ void dd_matrix_rotate(struct dd_matrix *m, float angle, float x, float y, float 
 	m2.cell[13] = 0;
 	m2.cell[14] = 0;
 	m2.cell[15] = 1;
+	#endif
 	dd_matrix_mult(m, &m2);
 }
 /* Matrix multiplication */
@@ -322,12 +341,21 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 	dd_vec3_cross(&up, &forward, &right);
 	dd_vec3_normalise(&up);
 
+	#if defined( AVDL_DIRECT3D11 )
+	float rot_mat[] = {
+		right.x, up.x, forward.x, 0,
+		right.y, up.y, forward.y, 0,
+		right.z, up.z, forward.z, 0,
+		0, 0, 0, 1
+	};
+	#else
 	float rot_mat[] = {
 		right.x, right.y, right.z, 0,
 		up.x, up.y, up.z, 0,
 		forward.x, forward.y, forward.z, 0,
 		0, 0, 0, 1,
 	};
+	#endif
 
 	for (int i = 0; i < 16; i++) {
 		m->cell[i] = rot_mat[i];
