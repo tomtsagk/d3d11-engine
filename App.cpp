@@ -6,6 +6,8 @@
 #include "dd_game.h"
 #include "dd_matrix.h"
 
+#include "dd_meshColour.h"
+
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
@@ -21,7 +23,7 @@ using namespace Microsoft::WRL;
 using namespace Platform;
 using namespace DirectX;
 
-extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix);
+extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struct dd_matrix *matrix);
 
 // Constant buffer used to send MVP matrices to the vertex shader.
 struct ModelViewProjectionConstantBuffer
@@ -382,7 +384,11 @@ void D3D11AvdlApplication::OnDisplayContentsInvalidated(DisplayInformation^ send
 {
 }
 
-extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix) {
+extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struct dd_matrix *matrix) {
+
+	/*
+	 * Matrix
+	 */
 	XMMATRIX orientationMatrix2(
 		matrix->cell
 	);
@@ -394,20 +400,20 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix) {
 		0,
 		NULL,
 		&avdl_constantBufferData,
-		//&orientationMatrix2,
-		//matrix->cell,
 		0,
 		0,
 		0
 	);
 
+	ComPtr<ID3D11Buffer> vertexBuffer = (ID3D11Buffer *) m->vertexBuffer;
 	// Each vertex is one instance of the VertexPositionColor struct.
 	UINT stride = sizeof(VertexPositionColor);
 	UINT offset = 0;
 	avdl_d3dContext->IASetVertexBuffers(
 		0,
 		1,
-		avdl_vertexBuffer.GetAddressOf(),
+		//avdl_vertexBuffer.GetAddressOf(),
+		vertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
 	);
@@ -441,7 +447,109 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix) {
 
 	// Draw cube
 	avdl_d3dContext->Draw(
-		9,
+		//3,
+		m->parent.vcount,
 		0
+	);
+}
+
+extern "C" const char* getAppLocation(void) {
+	static char filepath[1001];
+	Platform::String ^ locationString = Windows::ApplicationModel::Package::Current->InstalledLocation->Path;
+	WideCharToMultiByte(CP_UTF8, 0, locationString->Begin(), -1, filepath, 1000, nullptr, nullptr);
+	return filepath;
+}
+using namespace Windows::Storage;
+using namespace Streams;
+extern "C" FILE *avdl_filetomesh_openFile(char *filename) {
+
+	const char *filePath = getAppLocation();
+	char combined[1000];
+	strncpy_s(combined, 1000, filePath, 500);
+	strncat_s(combined, 1000, "\\", 500);
+	strncat_s(combined, 1000, filename, 500);
+	size_t size = strlen(combined) * 2 + 2;
+
+	FILE *fp_testFile = NULL;
+	errno_t err;
+
+	err = fopen_s(&fp_testFile, combined, "rb");
+	if (err == 0)
+	{
+		return fp_testFile;
+	}
+
+	return 0;
+}
+
+extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m) {
+
+	m->vertexBuffer = new ComPtr<ID3D11Buffer>();
+	//ComPtr<ID3D11Buffer> vertexBuffer;
+	// Load mesh vertices. Each vertex has a position and a color.
+	static const VertexPositionColor cubeVertices[] = 
+	{
+		{XMFLOAT3( 0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
+		{XMFLOAT3(-0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
+		{XMFLOAT3( 0.0f,  0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
+
+		{XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
+		{XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+		{XMFLOAT3( 0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
+
+		{XMFLOAT3( 0.5f,  0.5f, -0.5f), XMFLOAT3(1.7f, 0.5f, 0.5f)},
+		{XMFLOAT3( 0.5f,  0.5f,  0.5f), XMFLOAT3(1.5f, 0.7f, 0.5f)},
+		{XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(1.5f, 0.5f, 0.7f)},
+	};
+	static const VertexPositionColor cubeVertices2[] = 
+	{
+		{XMFLOAT3( 0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
+		{XMFLOAT3(-0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
+		{XMFLOAT3( 0.0f,  0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
+	};
+	//VertexPositionColor *cubeVertices3 = (VertexPositionColor *)malloc(sizeof(struct VertexPositionColor) *m->parent.vcount);
+	VertexPositionColor *cubeVertices3 = (VertexPositionColor *)malloc(sizeof(struct VertexPositionColor) *m->parent.vcount);
+	/*
+	cubeVertices3[0].pos = XMFLOAT3( 0.5f, -0.5f,  0.0f);
+	cubeVertices3[1].pos = XMFLOAT3(-0.5f, -0.5f,  0.0f);
+	cubeVertices3[2].pos = XMFLOAT3( 0.0f,  0.5f,  0.0f);
+	cubeVertices3[0].color = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	cubeVertices3[1].color = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	cubeVertices3[2].color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	*/
+	//for (int i = 0; i < m->parent.vcount; i += 3) {
+	for (int i = 0; i < m->parent.vcount; i++) {
+		cubeVertices3[i].pos = XMFLOAT3(
+				m->parent.v[i*3 +0],
+				m->parent.v[i*3 +1],
+				m->parent.v[i*3 +2]
+		);
+		cubeVertices3[i].color = XMFLOAT3(
+				m->c[i*3 +0],
+				m->c[i*3 +1],
+				m->c[i*3 +2]
+		);
+		/*
+		cubeVertices2->pos.y = m->parent.v[i*3 +1];
+		cubeVertices2->pos.z = m->parent.v[i*3 +2];
+		cubeVertices2->color.x = m->c[i*3 +0];
+		cubeVertices2->color.y = m->c[i*3 +1];
+		cubeVertices2->color.z = m->c[i*3 +2];
+		*/
+	}
+	/*
+	*/
+
+	D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
+	vertexBufferData.pSysMem = cubeVertices3;
+	vertexBufferData.SysMemPitch = 0;
+	vertexBufferData.SysMemSlicePitch = 0;
+	//CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
+	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *m->parent.vcount, D3D11_BIND_VERTEX_BUFFER);
+	//CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *3, D3D11_BIND_VERTEX_BUFFER);
+	avdl_d3dDevice->CreateBuffer(
+		&vertexBufferDesc,
+		&vertexBufferData,
+		(ID3D11Buffer**)&m->vertexBuffer
 	);
 }
