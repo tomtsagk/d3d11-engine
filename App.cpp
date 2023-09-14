@@ -412,8 +412,8 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struc
 	avdl_d3dContext->IASetVertexBuffers(
 		0,
 		1,
-		//avdl_vertexBuffer.GetAddressOf(),
-		vertexBuffer.GetAddressOf(),
+		avdl_vertexBuffer.GetAddressOf(),
+		//vertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
 	);
@@ -447,7 +447,8 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struc
 
 	// Draw cube
 	avdl_d3dContext->Draw(
-		3,
+		9,
+		//3,
 		//m->parent.vcount,
 		0
 	);
