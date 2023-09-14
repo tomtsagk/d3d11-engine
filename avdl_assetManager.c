@@ -363,6 +363,7 @@ void avdl_assetManager_loadAssets() {
 		else {
 			// mesh
 			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
+				/*
 				struct dd_mesh *mesh = m->object;
 				dd_mesh_clean(mesh);
 				struct dd_loaded_mesh lm;
@@ -370,10 +371,12 @@ void avdl_assetManager_loadAssets() {
 				mesh->vcount = lm.vcount;
 				mesh->v = lm.v;
 				mesh->dirtyVertices = 1;
+				*/
 			}
 			else
 			// mesh colour
 			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
+				/*
 				struct dd_meshColour *mesh = m->object;
 				dd_meshColour_clean(mesh);
 				struct dd_loaded_mesh lm;
@@ -386,10 +389,12 @@ void avdl_assetManager_loadAssets() {
 					mesh->c = lm.c;
 					mesh->dirtyColours = 1;
 				}
+				*/
 			}
 			else
 			// mesh texture
 			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
+				/*
 				struct dd_meshTexture *mesh = m->object;
 				dd_meshTexture_clean(mesh);
 				struct dd_loaded_mesh lm;
@@ -403,6 +408,7 @@ void avdl_assetManager_loadAssets() {
 				mesh->parent.dirtyColours = 1;
 				mesh->t = lm.t;
 				mesh->dirtyTextures = 1;
+				*/
 			}
 		}
 		#endif
