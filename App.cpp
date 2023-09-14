@@ -412,8 +412,8 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struc
 	avdl_d3dContext->IASetVertexBuffers(
 		0,
 		1,
-		avdl_vertexBuffer.GetAddressOf(),
-		//vertexBuffer.GetAddressOf(),
+		//avdl_vertexBuffer.GetAddressOf(),
+		vertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
 	);
@@ -536,11 +536,12 @@ extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m
 
 	D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
 	//vertexBufferData.pSysMem = cubeVertices3;
-	vertexBufferData.pSysMem = cubeVertices2;
+	vertexBufferData.pSysMem = cubeVertices;
 	vertexBufferData.SysMemPitch = 0;
 	vertexBufferData.SysMemSlicePitch = 0;
 	//CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *m->parent.vcount, D3D11_BIND_VERTEX_BUFFER);
-	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *3, D3D11_BIND_VERTEX_BUFFER);
+	//CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *3, D3D11_BIND_VERTEX_BUFFER);
+	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
 	avdl_d3dDevice->CreateBuffer(
 		&vertexBufferDesc,
 		&vertexBufferData,
