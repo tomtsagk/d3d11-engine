@@ -48,6 +48,7 @@ ComPtr<ID3D11Buffer> avdl_constantBuffer;
 ModelViewProjectionConstantBuffer avdl_constantBufferData;
 
 ComPtr<ID3D11Buffer> avdl_vertexBuffer;
+ComPtr<ID3D11Buffer> avdl_vertexBuffer2;
 
 // shaders
 ComPtr<ID3D11VertexShader> avdl_vertexShader;
@@ -413,7 +414,8 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struc
 		0,
 		1,
 		//avdl_vertexBuffer.GetAddressOf(),
-		vertexBuffer.GetAddressOf(),
+		avdl_vertexBuffer2.GetAddressOf(),
+		//vertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
 	);
@@ -483,10 +485,40 @@ extern "C" FILE *avdl_filetomesh_openFile(char *filename) {
 	return 0;
 }
 
+int once = 0;
 extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m) {
 
-	m->vertexBuffer = (void *) avdl_vertexBuffer;
-	return;
+	if (!once) {
+		// Load mesh vertices. Each vertex has a position and a color.
+		static const VertexPositionColor cubeVertices[] = 
+		{
+			{XMFLOAT3( 0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
+			{XMFLOAT3(-0.5f, -0.5f,  0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
+			{XMFLOAT3( 0.0f,  0.5f,  0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
+	
+			{XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
+			{XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
+			{XMFLOAT3( 0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
+	
+			{XMFLOAT3( 0.5f,  0.5f, -0.5f), XMFLOAT3(0.7f, 0.5f, 0.5f)},
+			{XMFLOAT3( 0.5f,  0.5f,  0.5f), XMFLOAT3(0.5f, 0.7f, 0.5f)},
+			{XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.5f, 0.5f, 0.7f)},
+		};
+
+		D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
+		vertexBufferData.pSysMem = cubeVertices;
+		vertexBufferData.SysMemPitch = 0;
+		vertexBufferData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
+		avdl_d3dDevice->CreateBuffer(
+			&vertexBufferDesc,
+			&vertexBufferData,
+			&avdl_vertexBuffer2
+		);
+		once = 1;
+		avdl_log2("Initialised second vertex buffer");
+	}
+
 	m->vertexBuffer = new ComPtr<ID3D11Buffer>();
 	//ComPtr<ID3D11Buffer> vertexBuffer;
 	// Load mesh vertices. Each vertex has a position and a color.
