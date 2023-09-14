@@ -507,6 +507,7 @@ extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m
 		{XMFLOAT3(-0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
 		{XMFLOAT3( 0.0f,  0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
 	};
+	/*
 	VertexPositionColor *cubeVertices3 = (VertexPositionColor *)malloc(sizeof(struct VertexPositionColor) *3);
 	//VertexPositionColor *cubeVertices3 = (VertexPositionColor *)malloc(sizeof(struct VertexPositionColor) *m->parent.vcount);
 	cubeVertices3[0].pos = XMFLOAT3( 0.5f, -0.5f,  0.0f);
@@ -515,6 +516,7 @@ extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m
 	cubeVertices3[0].color = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	cubeVertices3[1].color = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	cubeVertices3[2].color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	*/
 	/*
 	//for (int i = 0; i < m->parent.vcount; i += 3) {
 	for (int i = 0; i < m->parent.vcount; i++) {
@@ -532,7 +534,8 @@ extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m
 	*/
 
 	D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
-	vertexBufferData.pSysMem = cubeVertices3;
+	//vertexBufferData.pSysMem = cubeVertices3;
+	vertexBufferData.pSysMem = cubeVertices2;
 	vertexBufferData.SysMemPitch = 0;
 	vertexBufferData.SysMemSlicePitch = 0;
 	//CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *m->parent.vcount, D3D11_BIND_VERTEX_BUFFER);
