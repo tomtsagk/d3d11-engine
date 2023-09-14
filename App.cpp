@@ -485,6 +485,8 @@ extern "C" FILE *avdl_filetomesh_openFile(char *filename) {
 
 extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m) {
 
+	m->vertexBuffer = avdl_vertexBuffer;
+	return;
 	m->vertexBuffer = new ComPtr<ID3D11Buffer>();
 	//ComPtr<ID3D11Buffer> vertexBuffer;
 	// Load mesh vertices. Each vertex has a position and a color.
