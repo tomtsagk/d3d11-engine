@@ -167,6 +167,7 @@ int avdl_engine_draw(struct avdl_engine *o) {
 
 	/*
 	 * ??
+	 */
 	// Prepare the constant buffer to send it to the graphics device.
 	avdl_d3dContext->UpdateSubresource1(
 		avdl_constantBuffer.Get(),
@@ -221,7 +222,6 @@ int avdl_engine_draw(struct avdl_engine *o) {
 		9,
 		0
 	);
-	 */
 
 	// The first argument instructs DXGI to block until VSync, putting the application
 	// to sleep until the next VSync. This ensures we don't waste any cycles rendering
